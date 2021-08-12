@@ -14,26 +14,29 @@ module fftw-3.3
 trap 'clean_scratch' TERM EXIT
 
 # copy repositories (storage is shared via NFSv4)
-DATAROOT="/storage/brno2/home/fakub/parallel-arithmetics-benchmark/bench-parmesan"
+DATAROOT="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 
 cp \
-    $DATAROOT/bench-parmesan.tar.gz \
+    $DATAROOT/concrete-lib.tar.gz \
     $DATAROOT/parmesan.tar.gz \
+    $DATAROOT/bench-parmesan.tar.gz \
     $SCRATCHDIR
 
 # go for the computation
 cd $SCRATCHDIR
 
 # main command(s)
-mkdir -p bench-parmesan
+mkdir -p concrete-lib
 mkdir -p parmesan
+mkdir -p bench-parmesan
 
-tar -xzf bench-parmesan.tar.gz -C bench-parmesan
+tar -xzf concrete-lib.tar.gz -C concrete-lib
 tar -xzf parmesan.tar.gz -C parmesan
+tar -xzf bench-parmesan.tar.gz -C bench-parmesan
 
 cd bench-parmesan
 
 RUSTFLAGS="-C target-cpu=native" cargo build --release
 
 # copy output files (if needed)
-cp target/release/bench-parmesan $DATADIR || export CLEAN_SCRATCH=false
+cp target/release/bench-parmesan $DATAROOT || export CLEAN_SCRATCH=false

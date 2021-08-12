@@ -14,12 +14,12 @@
 trap 'clean_scratch' TERM EXIT
 
 # copy keys and binary (storage is shared via NFSv4)
-DATAROOT="/storage/brno2/home/fakub/parallel-arithmetics-benchmark/bench-parmesan"
+DATAROOT="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 
 cp \
-    $DATAROOT/bootstrapping-keys__n-560_k-1_N-1024_gamma-10_l-2.key \
-    $DATAROOT/key-switching-keys__n-560_k-1_N-1024_kappa-1_t-16.key \
-    $DATAROOT/target/release/bench-parmesan \
+    $DATAROOT/keys/bootstrapping-keys__n-560_k-1_N-1024_gamma-10_l-2.key \
+    $DATAROOT/keys/key-switching-keys__n-560_k-1_N-1024_kappa-1_t-16.key \
+    $DATAROOT/bench-parmesan \
     $SCRATCHDIR
 
 # go for the computation
