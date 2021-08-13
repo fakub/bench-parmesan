@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 parmesan = { path = "../parmesan" }    #   meaure   sequential
 colored = "2.0.0"
+rayon = "^1.5.1"
