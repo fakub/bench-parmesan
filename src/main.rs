@@ -10,7 +10,9 @@ use parmesan::ParmesanUserovo;
 use parmesan::cloudovo::*;
 use parmesan::ParmesanCloudovo;
 
-fn main() {
+fn main() {let _x = bench();}
+
+fn bench() -> Result<(), Box<dyn Error>> {
 
 
 
@@ -18,24 +20,21 @@ fn main() {
     //  Prepare userovo & cloudovo
 
     #[cfg(not(feature = "sequential"))]
-    println!("\nParallel ({} threads)\n", rayon::current_num_threads());
+    println!("\n{} ({} threads)\n", String::from("Parallel").bold().yellow(), rayon::current_num_threads());
     #[cfg(feature = "sequential")]
     println!("\nSequential\n");
 
-    // ---------------------------------
-    //  Parameters
+    // parameters
     let par = &params::PARM90__PI_5__D_20__LEN_32;   //     PARM90__PI_5__D_20__LEN_32      PARMXX__TRIVIAL
 
     parmesan::simple_duration!(
         ["Setup keys"],
         [
-            // ---------------------------------
-            //  Userovo Scope
-            let pu = ParmesanUserovo::new(par).expect("ParmesanUserovo::new failed.");
+            // Userovo Scope & keys
+            let pu = ParmesanUserovo::new(par)?;
             let pub_k = pu.export_pub_keys();
 
-            // ---------------------------------
-            //  Cloudovo Scope
+            // Cloudovo Scope
             let pc = ParmesanCloudovo::new(
                 par,
                 &pub_k,
@@ -44,64 +43,138 @@ fn main() {
     );
 
 
+
     // =========================================================================
     //  Generate & Encrypt inputs
 
-    // take 4 random 32-word sequences of {-1,0,1} (possibly other lengths, too)
-    let mp: Vec<i32> = vec![1,0,1,-1,-1,0,-1,1,1,-1,1,1,1,-1,-1,0,0,1,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,];
-    let mn: Vec<i32> = vec![-1,0,0,-1,1,1,-1,1,-1,0,0,1,0,1,1,0,0,0,-1,0,0,1,0,0,-1,0,-1,-1,-1,1,1,0,];
-    //~ let mut mp: Vec<i32> = vec![1,0,0,1,1,0,1,1,1,0,1,1,]; mp.reverse();   // [0,1,1,1,1,1,1,0,1,1,0,0,1,0,0,1,0,0,1,1,1,0,0,1,1,0,1,1,1,0,1,1,];
-    //~ let mut mn: Vec<i32> = vec![1,1,1,1,0,0,1,0,0,0,0,0,]; mn.reverse();   // [0,0,1,1,0,0,1,0,0,0,1,1,1,1,1,0,0,1,1,0,1,1,1,1,0,0,1,0,0,0,0,0,];
-    let mp_val = encryption::convert(&mp).expect("encryption::convert failed.");
-    let mn_val = encryption::convert(&mn).expect("encryption::convert failed.");
-    println!("mp_in = {:12}",   mp_val);
-    println!("mn_in = {:12}\n", mn_val);
-    let cp = pu.encrypt_vec(&mp).expect("encrypt_vec failed.");
-    let cn = pu.encrypt_vec(&mn).expect("encrypt_vec failed.");
+    // 4 random 32-word sequences of {-1,0,1}
+    let a: Vec<i32> = vec![1,0,1,-1,-1,0,-1,1,1,-1,1,1,1,-1,-1,0,0,1,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,];
+    let b: Vec<i32> = vec![-1,0,0,-1,1,1,-1,1,-1,0,0,1,0,1,1,0,0,0,-1,0,0,1,0,0,-1,0,-1,-1,-1,1,1,0,];
+    let c: Vec<i32> = vec![-1,1,-1,1,-1,1,0,0,-1,0,-1,1,0,0,1,1,1,1,1,0,-1,0,0,-1,1,0,1,1,-1,-1,0,];
+    let d: Vec<i32> = vec![1,0,1,0,0,1,0,-1,0,1,-1,0,0,0,-1,0,1,-1,1,1,0,0,-1,-1,0,0,1,1,1,1,0,];
 
-    //~ //DBG
-    //~ let cp = pu.encrypt(2491, 12).expect("encrypt_vec failed.");
-    //~ let cn = pu.encrypt(3872, 12).expect("encrypt_vec failed.");
-    //~ let mp_d = pu.decrypt(&cp).expect("decrypt failed.");
-    //~ let mn_d = pu.decrypt(&cn).expect("decrypt failed.");
-    //~ println!("mp_dc = {}", mp_d);
-    //~ println!("mn_dc = {}\n", mn_d);
+    // pairs of random 4-, 8- and 16-word sequences of {-1,0,1}
+    let a4:  Vec<i32> = vec![1,-1,-1,0,];
+    let b4:  Vec<i32> = vec![0,0,1,-1,];
+    let a8:  Vec<i32> = vec![1,1,-1,-1,0,0,-1,-1,];
+    let b8:  Vec<i32> = vec![-1,0,1,0,0,-1,0,-1,];
+    let a16: Vec<i32> = vec![0,0,1,0,-1,1,-1,-1,0,1,1,0,0,1,-1,1,];
+    let b16: Vec<i32> = vec![1,1,0,0,0,1,0,1,1,1,0,1,0,1,1,-1,];
+
+    // get & print actual numbers
+    let a_val = encryption::convert(&a)?;
+    let b_val = encryption::convert(&b)?;
+    let c_val = encryption::convert(&c)?;
+    let d_val = encryption::convert(&d)?;
+
+    let a4_val  = encryption::convert(&a4 )?;
+    let b4_val  = encryption::convert(&b4 )?;
+    let a8_val  = encryption::convert(&a8 )?;
+    let b8_val  = encryption::convert(&b8 )?;
+    let a16_val = encryption::convert(&a16)?;
+    let b16_val = encryption::convert(&b16)?;
+
+    println!("a   = {:12}", a_val);
+    println!("b   = {:12}", b_val);
+    println!("c   = {:12}", c_val);
+    println!("d   = {:12}", d_val);
+
+    println!("a4  = {:12}", a4_val );
+    println!("b4  = {:12}", b4_val );
+    println!("a8  = {:12}", a8_val );
+    println!("b8  = {:12}", b8_val );
+    println!("a16 = {:12}", a16_val);
+    println!("b16 = {:12}\n", b16_val);
+
+    // encrypt values
+    let ca = pu.encrypt_vec(&a)?;
+    let cb = pu.encrypt_vec(&b)?;
+    let cc = pu.encrypt_vec(&c)?;
+    let cd = pu.encrypt_vec(&d)?;
+
+    let ca4  = pu.encrypt_vec(&a4 )?;
+    let cb4  = pu.encrypt_vec(&b4 )?;
+    let ca8  = pu.encrypt_vec(&a8 )?;
+    let cb8  = pu.encrypt_vec(&b8 )?;
+    let ca16 = pu.encrypt_vec(&a16)?;
+    let cb16 = pu.encrypt_vec(&b16)?;
+
 
 
     // =========================================================================
     //  Addition
 
-    // first-level addition/subtraction:   a + b   ,   c + d
+    // first level addition/subtraction:   a + b   ,   c - d
     parmesan::simple_duration!(
-        ["1st level addition"],
+        ["1st level addition: a + b   (no BS)"],
         [
-            let c_a1 = pc.add(&cp, &cn).expect("add failed.");
+            let c_add_a_b = pc.add(&ca, &cb)?;
         ]
     );
     parmesan::simple_duration!(
-        ["1st level subtraction"],
+        ["1st level subtraction: c - d   (no BS)"],
         [
-            let c_s1 = pc.sub(&cp, &cn).expect("sub failed.");
+            let c_sub_c_d = pc.sub(&cc, &cd)?;
         ]
     );
 
-    // second level addition   (a+b) + (c+d)
+    // second level addition:   (a+b) + (c-d)
+    //TODO bootstrap 1 !!
+    parmesan::simple_duration!(
+        ["2nd level addition: (a+b) + (c-d)   (with BS)"],
+        [
+            let c_add_ab_cnd = pc.add(&c_add_a_b, &c_sub_c_d)?;
+            //TODO bootstrap 2 !!
+            // idea: have add do bootstrap implicitly, add_dirty without bootstrap
+        ]
+    );
+
 
 
     // =========================================================================
     //  Signum
 
-    // signum of fresh
+    // first level signum
+    parmesan::simple_duration!(
+        ["1st level signum: sgn(a)   (no BS)"],
+        [
+            let c_sgn_a = pc.sgn(&ca)?;
+        ]
+    );
 
-    // signum of result
+    // second level signum
+    parmesan::simple_duration!(
+        ["2nd level signum: sgn((a+b) + (c-d))   (with BS)"],
+        [
+            let c_sgn_abcnd = pc.sgn(&c_add_ab_cnd)?;
+        ]
+    );
 
 
     // =========================================================================
     //  Maximum
 
-    // first-level maximum
+    // first level maximum
+    parmesan::simple_duration!(
+        ["1st level maximum: max(a, b)   (no BS)"],
+        [
+            let c_max_a_b = pc.max(&ca, &cb)?;
+        ]
+    );
+    parmesan::simple_duration!(
+        ["1st level maximum: max(c, d)   (no BS)"],
+        [
+            let c_max_c_d = pc.max(&cc, &cd)?;
+        ]
+    );
 
-    // second-level maximum
+    // second level maximum
+    parmesan::simple_duration!(
+        ["2nd level maximum: max(m_ab, m_cd)   (with BS)"],
+        [
+            let c_max_mab_mcd = pc.max(&c_max_a_b, &c_max_c_d)?;
+        ]
+    );
 
 
     // =========================================================================
@@ -136,21 +209,60 @@ fn main() {
     //  Decrypt & Check Correctness
 
     // decrypt all results
-    let m_a1 = pu.decrypt(&c_a1).expect("decrypt failed.");
-    let m_s1 = pu.decrypt(&c_s1).expect("decrypt failed.");
+    let add_a_b     = pu.decrypt(&c_add_a_b     )?;
+    let sub_c_d     = pu.decrypt(&c_sub_c_d     )?;
+    let add_ab_cnd  = pu.decrypt(&c_add_ab_cnd  )?;
+    let sgn_a       = pu.decrypt(&c_sgn_a       )?;
+    let sgn_abcnd   = pu.decrypt(&c_sgn_abcnd   )?;
+    let max_a_b     = pu.decrypt(&c_max_a_b     )?;
+    let max_c_d     = pu.decrypt(&c_max_c_d     )?;
+    let max_mab_mcd = pu.decrypt(&c_max_mab_mcd )?;
 
     // print summary
     let mut summary_text = format!("\n{}\n", String::from("Results:").bold().yellow());
-    summary_text = format!("{}\nmp + mn     = {:12} :: {} (exp. {} % {})", summary_text,
-                            m_a1,
-                            if (mp_val + mn_val - m_a1) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (mp_val + mn_val) % (1 << 32), 1u64 << 32
+
+    summary_text = format!("{}\na + b         = {:12} :: {} (exp. {} % {})", summary_text,
+                            add_a_b,
+                            if (a_val + b_val - add_a_b) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            (a_val + b_val) % (1 << 32), 1u64 << 32
     );
-    summary_text = format!("{}\nmp - mn     = {:12} :: {} (exp. {} % {})", summary_text,
-                            m_s1,
-                            if (mp_val - mn_val - m_s1) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (mp_val - mn_val) % (1 << 32), 1u64 << 32
-    );   //TODO something like DEMO_BITLEN
+    summary_text = format!("{}\nc - d         = {:12} :: {} (exp. {} % {})", summary_text,
+                            sub_c_d,
+                            if (c_val - d_val - sub_c_d) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            (c_val - d_val) % (1 << 32), 1u64 << 32
+    );
+    summary_text = format!("{}\n(a+b) + (c-d) = {:12} :: {} (exp. {} % {})", summary_text,
+                            add_ab_cnd,
+                            if (add_a_b + sub_c_d - add_ab_cnd) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            (add_a_b + sub_c_d) % (1 << 32), 1u64 << 32
+    );
+    summary_text = format!("{}\nsgn(a)        = {:12} :: {} (exp. {} % {})", summary_text,
+                            sgn_a,
+                            if sgn_a == a_val.signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a_val.signum() % (1 << 32), 1u64 << 32
+    );
+    summary_text = format!("{}\nsgn(a+b+c-d)  = {:12} :: {} (exp. {} % {})", summary_text,
+                            sgn_abcnd,
+                            if sgn_abcnd == add_ab_cnd.signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            add_ab_cnd.signum() % (1 << 32), 1u64 << 32
+    );
+    summary_text = format!("{}\nmax(a, b)     = {:12} :: {} (exp. {} % {})", summary_text,
+                            max_a_b,
+                            if max_a_b == std::cmp::max(a_val, b_val) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            std::cmp::max(a_val, b_val) % (1 << 32), 1u64 << 32
+    );
+    summary_text = format!("{}\nmax(c, d)     = {:12} :: {} (exp. {} % {})", summary_text,
+                            max_c_d,
+                            if max_c_d == std::cmp::max(c_val, d_val) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            std::cmp::max(c_val, d_val) % (1 << 32), 1u64 << 32
+    );
+    summary_text = format!("{}\nmax(m_ab,m_cd)= {:12} :: {} (exp. {} % {})", summary_text,
+                            max_mab_mcd,
+                            if max_mab_mcd == std::cmp::max(max_a_b, max_c_d) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            std::cmp::max(max_a_b, max_c_d) % (1 << 32), 1u64 << 32
+    );
+
     println!("{}\n", summary_text);
 
+    Ok(())
 }
