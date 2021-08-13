@@ -36,6 +36,7 @@ DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 
 # copy keys
 cp \
+    $DATA_DIR/keys/secret-key__n-560.key \
     $DATA_DIR/keys/bootstrapping-keys__n-560_k-1_N-1024_gamma-10_l-2.key \
     $DATA_DIR/keys/key-switching-keys__n-560_k-1_N-1024_kappa-1_t-16.key \
     . || { echo >&2 "Error while copying input file(s)!"; exit 2; }

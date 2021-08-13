@@ -9,5 +9,5 @@ scp \
     xx_processor-info.sh \
     skirit:~/parallel-arithmetics-benchmark/
 
-echo "(check that keys are already copied)"
+echo "(check that ALL keys are already copied: SK, BK, KSK)"
 echo "(maybe also repos: archive them with   archive-repo <repo>   )"
