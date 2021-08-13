@@ -10,4 +10,5 @@ scp \
     skirit:~/parallel-arithmetics-benchmark/
 
 echo "(check that ALL keys are already copied: SK, BK, KSK)"
-echo "(maybe also repos: archive them with   archive-repo <repo>   )"
+echo "(check branches in 02_...sh -- in particular parmesan)"
+# possibly archive repos with   $ archive-repo <repo>
