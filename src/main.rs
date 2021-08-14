@@ -2,7 +2,7 @@ use std::error::Error;
 use colored::Colorize;
 
 use parmesan::params;
-//~ use parmesan::ciphertexts::ParmCiphertext;
+use parmesan::ciphertexts::ParmCiphertext;
 
 use parmesan::userovo::*;
 use parmesan::ParmesanUserovo;
@@ -72,6 +72,9 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let a32: Vec<i32> = vec![-1,-1,1,0,-1,0,-1,0,1,-1,-1,0,1,-1,0,-1,0,-1,1,1,1,-1,1,-1,0,0,-1,0,0,1,1,0,];
     let b32: Vec<i32> = vec![1,-1,-1,-1,1,-1,1,-1,0,1,-1,0,1,0,1,0,-1,1,1,-1,1,-1,-1,0,0,-1,-1,0,-1,-1,-1,0,];
 
+    // random scalars
+    let k: [i32; 3] = [-161, 128, 1023];
+
     // convert to actual numbers
     let a_val = encryption::convert(&a)?;
     let b_val = encryption::convert(&b)?;
@@ -123,17 +126,25 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // =========================================================================
     //  Addition
 
+    #[cfg(feature = "add")]
+    let c_add_a_b: ParmCiphertext;
+    #[cfg(feature = "add")]
+    let c_sub_c_d: ParmCiphertext;
+    #[cfg(feature = "add")]
+    let c_add_ab_cnd: ParmCiphertext;
+    #[cfg(feature = "add")]
+    {
     // first level addition/subtraction:   a + b   ,   c - d
     parmesan::simple_duration!(
         ["1st level addition: a + b   (no BS)"],
         [
-            let c_add_a_b = pc.add(&ca, &cb)?;
+            c_add_a_b = pc.add(&ca, &cb)?;
         ]
     );
     parmesan::simple_duration!(
         ["1st level subtraction: c - d   (no BS)"],
         [
-            let c_sub_c_d = pc.sub(&cc, &cd)?;
+            c_sub_c_d = pc.sub(&cc, &cd)?;
         ]
     );
 
@@ -142,22 +153,29 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["2nd level addition: (a+b) + (c-d)   (with BS)"],
         [
-            let c_add_ab_cnd = pc.add(&c_add_a_b, &c_sub_c_d)?;
+            c_add_ab_cnd = pc.add(&c_add_a_b, &c_sub_c_d)?;
             //TODO bootstrap 2 !!
             // idea: have add do bootstrap implicitly, add_dirty without bootstrap
         ]
     );
+    }
 
 
 
     // =========================================================================
     //  Signum
 
+    #[cfg(feature = "sgn")]
+    let c_sgn_a: ParmCiphertext;
+    #[cfg(feature = "sgn")]
+    let c_sgn_abcnd: ParmCiphertext;
+    #[cfg(feature = "sgn")]
+    {
     // first level signum
     parmesan::simple_duration!(
         ["1st level signum: sgn(a)   (no BS)"],
         [
-            let c_sgn_a = pc.sgn(&ca)?;
+            c_sgn_a = pc.sgn(&ca)?;
         ]
     );
 
@@ -165,25 +183,34 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["2nd level signum: sgn((a+b) + (c-d))   (with BS)"],
         [
-            let c_sgn_abcnd = pc.sgn(&c_add_ab_cnd)?;
+            c_sgn_abcnd = pc.sgn(&c_add_ab_cnd)?;
         ]
     );
+    }
 
 
     // =========================================================================
     //  Maximum
 
+    #[cfg(feature = "max")]
+    let c_max_a_b: ParmCiphertext;
+    #[cfg(feature = "max")]
+    let c_max_c_d: ParmCiphertext;
+    #[cfg(feature = "max")]
+    let c_max_mab_mcd: ParmCiphertext;
+    #[cfg(feature = "max")]
+    {
     // first level maximum
     parmesan::simple_duration!(
         ["1st level maximum: max(a, b)   (no BS)"],
         [
-            let c_max_a_b = pc.max(&ca, &cb)?;
+            c_max_a_b = pc.max(&ca, &cb)?;
         ]
     );
     parmesan::simple_duration!(
         ["1st level maximum: max(c, d)   (no BS)"],
         [
-            let c_max_c_d = pc.max(&cc, &cd)?;
+            c_max_c_d = pc.max(&cc, &cd)?;
         ]
     );
 
@@ -191,19 +218,30 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["2nd level maximum: max(m_ab, m_cd)   (with BS)"],
         [
-            let c_max_mab_mcd = pc.max(&c_max_a_b, &c_max_c_d)?;
+            c_max_mab_mcd = pc.max(&c_max_a_b, &c_max_c_d)?;
         ]
     );
+    }
 
 
     // =========================================================================
     //  Multiplication
 
+    #[cfg(feature = "mul")]
+    let c_mul4_a_b: ParmCiphertext;
+    #[cfg(feature = "mul")]
+    let c_mul8_a_b: ParmCiphertext;
+    #[cfg(feature = "mul")]
+    let c_mul16_a_b: ParmCiphertext;
+    #[cfg(feature = "mul")]
+    let c_mul32_a_b: ParmCiphertext;
+    #[cfg(feature = "mul")]
+    {
     // 4-word multiplication -> 8-word (congruent mod 2^8, can have negative sign, not good for comparison .. ???)
     parmesan::simple_duration!(
         ["4-word multiplication: a4 × b4"],
         [
-            let c_mul4_a_b = pc.mul(&ca4, &cb4)?;
+            c_mul4_a_b = pc.mul(&ca4, &cb4)?;
         ]
     );
 
@@ -211,7 +249,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["8-word multiplication: a8 × b8"],
         [
-            let c_mul8_a_b = pc.mul(&ca8, &cb8)?;
+            c_mul8_a_b = pc.mul(&ca8, &cb8)?;
         ]
     );
 
@@ -219,7 +257,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["16-word multiplication: a16 × b16"],
         [
-            let c_mul16_a_b = pc.mul(&ca16, &cb16)?;
+            c_mul16_a_b = pc.mul(&ca16, &cb16)?;
         ]
     );
 
@@ -227,19 +265,29 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["32-word multiplication: a32 × b32"],
         [
-            let c_mul32_a_b = pc.mul(&ca32, &cb32)?;
+            c_mul32_a_b = pc.mul(&ca32, &cb32)?;
         ]
     );
+    }
 
 
     // =========================================================================
-    //  TODO: Scalar Multiplication
+    //  Scalar Multiplication
 
-    // 4-bit scalar times 4-word ciphertext
-
-    // 8-bit scalar times 8-word ciphertext
-
-    // 16-bit scalar times 16-word ciphertext
+    #[cfg(feature = "scm")]
+    let mut c_scm16_a = Vec::new();
+    #[cfg(feature = "scm")]
+    {
+    // scalar multiplication of 16-word
+    for ki in k {
+        parmesan::simple_duration!(
+            ["scalar multiplication: {}/0b{:b}/ × a16   (with BS)", ki, ki.abs()],
+            [
+                c_scm16_a.push(pc.scalar_mul(ki, &ca16)?);
+            ]
+        );
+    }
+    }
 
 
     // =========================================================================
@@ -251,24 +299,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // =========================================================================
     //  Decrypt & Check Correctness
 
-    // decrypt all results
+    let mut summary_text = format!("\n{}:", String::from("Results").bold().yellow());
+
+    // decrypt & verify all results
+    #[cfg(feature = "add")]
+    {
     let add_a_b     = pu.decrypt(&c_add_a_b     )?;
     let sub_c_d     = pu.decrypt(&c_sub_c_d     )?;
     let add_ab_cnd  = pu.decrypt(&c_add_ab_cnd  )?;
-    let sgn_a       = pu.decrypt(&c_sgn_a       )?;
-    let sgn_abcnd   = pu.decrypt(&c_sgn_abcnd   )?;
-    let max_a_b     = pu.decrypt(&c_max_a_b     )?;
-    let max_c_d     = pu.decrypt(&c_max_c_d     )?;
-    let max_mab_mcd = pu.decrypt(&c_max_mab_mcd )?;
-
-    let mul4_a_b    = pu.decrypt(&c_mul4_a_b    )?;
-    let mul8_a_b    = pu.decrypt(&c_mul8_a_b    )?;
-    let mul16_a_b   = pu.decrypt(&c_mul16_a_b   )?;
-    let mul32_a_b   = pu.decrypt(&c_mul32_a_b   )?;
-
-    // print summary
-    let mut summary_text = format!("\n{}:\n", String::from("Results").bold().yellow());
-
+    summary_text = format!("{}\n\nAddition:", summary_text);
     summary_text = format!("{}\na + b         = {:12} :: {} (exp. {} % {})", summary_text,
                             add_a_b,
                             if (a_val + b_val - add_a_b) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -284,6 +323,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if (add_a_b + sub_c_d - add_ab_cnd) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             (add_a_b + sub_c_d) % (1 << 32), 1u64 << 32
     );
+    }
+
+    #[cfg(feature = "sgn")]
+    {
+    let sgn_a       = pu.decrypt(&c_sgn_a       )?;
+    let sgn_abcnd   = pu.decrypt(&c_sgn_abcnd   )?;
+    summary_text = format!("{}\n\nSignum:", summary_text);
     summary_text = format!("{}\nsgn(a)        = {:12} :: {} (exp. {} % {})", summary_text,
                             sgn_a,
                             if sgn_a == a_val.signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -291,9 +337,17 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     summary_text = format!("{}\nsgn(a+b+c-d)  = {:12} :: {} (exp. {} % {})", summary_text,
                             sgn_abcnd,
-                            if sgn_abcnd == add_ab_cnd.signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            add_ab_cnd.signum() % (1 << 32), 1u64 << 32
+                            if sgn_abcnd == (a_val + b_val + c_val - d_val).signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            (a_val + b_val + c_val - d_val).signum() % (1 << 32), 1u64 << 32
     );
+    }
+
+    #[cfg(feature = "max")]
+    {
+    let max_a_b     = pu.decrypt(&c_max_a_b     )?;
+    let max_c_d     = pu.decrypt(&c_max_c_d     )?;
+    let max_mab_mcd = pu.decrypt(&c_max_mab_mcd )?;
+    summary_text = format!("{}\n\nMaximum:", summary_text);
     summary_text = format!("{}\nmax{{a, b}}     = {:12} :: {} (exp. {} % {})", summary_text,
                             max_a_b,
                             if max_a_b == std::cmp::max(a_val, b_val) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -304,13 +358,20 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if max_c_d == std::cmp::max(c_val, d_val) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             std::cmp::max(c_val, d_val) % (1 << 32), 1u64 << 32
     );
-    summary_text = format!("{}\nmax{{m_ab,m_cd}}= {:12} :: {} (exp. {} % {})\n", summary_text,
+    summary_text = format!("{}\nmax{{m_ab,m_cd}}= {:12} :: {} (exp. {} % {})", summary_text,
                             max_mab_mcd,
                             if max_mab_mcd == std::cmp::max(max_a_b, max_c_d) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             std::cmp::max(max_a_b, max_c_d) % (1 << 32), 1u64 << 32
     );
+    }
 
-    // multiplications
+    #[cfg(feature = "mul")]
+    {
+    let mul4_a_b    = pu.decrypt(&c_mul4_a_b    )?;
+    let mul8_a_b    = pu.decrypt(&c_mul8_a_b    )?;
+    let mul16_a_b   = pu.decrypt(&c_mul16_a_b   )?;
+    let mul32_a_b   = pu.decrypt(&c_mul32_a_b   )?;
+    summary_text = format!("{}\n\nMultiplication:", summary_text);
     summary_text = format!("{}\na4 × b4       = {:22} :: {} (exp. {})", summary_text,
                             mul4_a_b,
                             if mul4_a_b == a4_val * b4_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -331,6 +392,23 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if mul32_a_b == a32_val * b32_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a32_val * b32_val
     );
+    }
+
+    #[cfg(feature = "scm")]
+    {
+    let mut scm16_a = Vec::new();
+    for ci in c_scm16_a {
+        scm16_a.push(pu.decrypt(&ci)?);
+    }
+    summary_text = format!("{}\n\nScalar Multiplication:", summary_text);
+    for (ki, scmi) in k.iter().zip(scm16_a.iter()) {
+        summary_text = format!("{}\n{:7} × a16 = {:12} :: {} (exp. {})", summary_text,
+                                ki, scmi,
+                                if *scmi == (*ki as i64) * a16_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                                (*ki as i64) * a16_val
+        );
+    }
+    }
 
     println!("{}\n", summary_text);
 
