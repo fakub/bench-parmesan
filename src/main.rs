@@ -10,6 +10,8 @@ use parmesan::ParmesanUserovo;
 //~ use parmesan::cloudovo::*;
 use parmesan::ParmesanCloudovo;
 
+use parmesan::arithmetics::ParmArithmetics;
+
 fn main() {
     println!();
     parmesan::simple_duration!(
@@ -37,7 +39,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let par = &params::PARM90__PI_5__D_20__LEN_32;   //     PARM90__PI_5__D_20__LEN_32      PARMXX__TRIVIAL
 
     parmesan::simple_duration!(
-        ["Setup keys"],
+        ["Setup/load keys"],
         [
             // Userovo Scope & keys
             let pu = ParmesanUserovo::new(par)?;
@@ -138,13 +140,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["1st level addition: a + b   (no BS)"],
         [
-            c_add_a_b = pc.add(&ca, &cb)?;
+            c_add_a_b = ParmArithmetics::add(&pc, &ca, &cb);
         ]
     );
     parmesan::simple_duration!(
         ["1st level subtraction: c - d   (no BS)"],
         [
-            c_sub_c_d = pc.sub(&cc, &cd)?;
+            c_sub_c_d = ParmArithmetics::sub(&pc, &cc, &cd);
         ]
     );
 
@@ -153,7 +155,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["2nd level addition: (a+b) + (c-d)   (with BS)"],
         [
-            c_add_ab_cnd = pc.add(&c_add_a_b, &c_sub_c_d)?;
+            c_add_ab_cnd = ParmArithmetics::add(&pc, &c_add_a_b, &c_sub_c_d);
             //TODO bootstrap 2 !!
             // idea: have add do bootstrap implicitly, add_dirty without bootstrap
         ]
@@ -175,7 +177,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["1st level signum: sgn(a)   (no BS)"],
         [
-            c_sgn_a = pc.sgn(&ca)?;
+            c_sgn_a = ParmArithmetics::sgn(&pc, &ca);
         ]
     );
 
@@ -183,7 +185,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["2nd level signum: sgn((a+b) + (c-d))   (with BS)"],
         [
-            c_sgn_abcnd = pc.sgn(&c_add_ab_cnd)?;
+            c_sgn_abcnd = ParmArithmetics::sgn(&pc, &c_add_ab_cnd);
         ]
     );
     }
@@ -204,13 +206,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["1st level maximum: max(a, b)   (no BS)"],
         [
-            c_max_a_b = pc.max(&ca, &cb)?;
+            c_max_a_b = ParmArithmetics::max(&pc, &ca, &cb);
         ]
     );
     parmesan::simple_duration!(
         ["1st level maximum: max(c, d)   (no BS)"],
         [
-            c_max_c_d = pc.max(&cc, &cd)?;
+            c_max_c_d = ParmArithmetics::max(&pc, &cc, &cd);
         ]
     );
 
@@ -218,7 +220,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["2nd level maximum: max(m_ab, m_cd)   (with BS)"],
         [
-            c_max_mab_mcd = pc.max(&c_max_a_b, &c_max_c_d)?;
+            c_max_mab_mcd = ParmArithmetics::max(&pc, &c_max_a_b, &c_max_c_d);
         ]
     );
     }
@@ -241,7 +243,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["4-word multiplication: a4 × b4"],
         [
-            c_mul4_a_b = pc.mul(&ca4, &cb4)?;
+            c_mul4_a_b = ParmArithmetics::mul(&pc, &ca4, &cb4);
         ]
     );
 
@@ -249,7 +251,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["8-word multiplication: a8 × b8"],
         [
-            c_mul8_a_b = pc.mul(&ca8, &cb8)?;
+            c_mul8_a_b = ParmArithmetics::mul(&pc, &ca8, &cb8);
         ]
     );
 
@@ -257,7 +259,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["16-word multiplication: a16 × b16"],
         [
-            c_mul16_a_b = pc.mul(&ca16, &cb16)?;
+            c_mul16_a_b = ParmArithmetics::mul(&pc, &ca16, &cb16);
         ]
     );
 
@@ -265,7 +267,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["32-word multiplication: a32 × b32"],
         [
-            c_mul32_a_b = pc.mul(&ca32, &cb32)?;
+            c_mul32_a_b = ParmArithmetics::mul(&pc, &ca32, &cb32);
         ]
     );
     }
@@ -275,7 +277,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Scalar Multiplication
 
     #[cfg(feature = "scm")]
-    let mut c_scm16_a = Vec::new();
+    let mut c_scm16_a: Vec<ParmCiphertext> = Vec::new();
     #[cfg(feature = "scm")]
     {
     // scalar multiplication of 16-word
@@ -283,7 +285,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
         parmesan::simple_duration!(
             ["scalar multiplication: {}/0b{:b}/ × a16   (with BS)", ki, ki.abs()],
             [
-                c_scm16_a.push(pc.scalar_mul(ki, &ca16)?);
+                c_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &ca16));
             ]
         );
     }
@@ -291,9 +293,37 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
 
     // =========================================================================
-    //  TODO: NN Evaluation
+    //  NN Evaluation
 
     // some very simple NN
+
+    //TODO format & use nn macro
+    //~ let nn = NeuralNetwork {
+        //~ layers: vec![
+            //~ vec![
+                //~ Perceptron {
+                    //~ t: PercType::MAX,
+                    //~ w: vec![1,-2,-2,],
+                    //~ b: 2,
+                //~ },
+                //~ Perceptron {
+                    //~ t: PercType::LIN,
+                    //~ w: vec![1,3,-1,],
+                    //~ b: -5,
+                //~ },
+                //~ Perceptron {
+                    //~ t: PercType::ACT,
+                    //~ w: vec![1,3,-1,],
+                    //~ b: 3,
+                //~ },
+            //~ ],
+        //~ ],
+        //~ pc: &pc,
+    //~ };
+
+    //~ let c_out = nn.eval(&c_in);
+    //~ let m_out_plain = nn.eval(&m_in);
+
 
 
     // =========================================================================
@@ -396,7 +426,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "scm")]
     {
-    let mut scm16_a = Vec::new();
+    let mut scm16_a: Vec<i64> = Vec::new();
     for ci in c_scm16_a {
         scm16_a.push(pu.decrypt(&ci)?);
     }
