@@ -7,7 +7,7 @@ use parmesan::ciphertexts::ParmCiphertext;
 use parmesan::userovo::*;
 use parmesan::ParmesanUserovo;
 
-//~ use parmesan::cloudovo::*;
+use parmesan::cloudovo::neural_network::{NeuralNetwork, Perceptron, PercType};
 use parmesan::ParmesanCloudovo;
 
 use parmesan::arithmetics::ParmArithmetics;
@@ -69,6 +69,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let b4:  Vec<i32> = vec![0,0,1,-1,];
     let a8:  Vec<i32> = vec![1,1,-1,-1,0,0,-1,-1,];
     let b8:  Vec<i32> = vec![-1,0,1,0,0,-1,0,-1,];
+    let c8:  Vec<i32> = vec![1,1,0,-1,0,1,-1,1,];
+    let d8:  Vec<i32> = vec![-1,1,1,1,1,-1,-1,1,];
     let a16: Vec<i32> = vec![0,0,1,0,-1,1,-1,-1,0,1,1,0,0,1,-1,1,];
     let b16: Vec<i32> = vec![1,1,0,0,0,1,0,1,1,1,0,1,0,1,1,-1,];
     let a32: Vec<i32> = vec![-1,-1,1,0,-1,0,-1,0,1,-1,-1,0,1,-1,0,-1,0,-1,1,1,1,-1,1,-1,0,0,-1,0,0,1,1,0,];
@@ -87,6 +89,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let b4_val  = encryption::convert(&b4 )?;
     let a8_val  = encryption::convert(&a8 )?;
     let b8_val  = encryption::convert(&b8 )?;
+    let c8_val  = encryption::convert(&c8 )?;
+    let d8_val  = encryption::convert(&d8 )?;
     let a16_val = encryption::convert(&a16)?;
     let b16_val = encryption::convert(&b16)?;
     let a32_val = encryption::convert(&a32)?;
@@ -103,6 +107,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     println!("b4  = {:12}", b4_val );
     println!("a8  = {:12}", a8_val );
     println!("b8  = {:12}", b8_val );
+    println!("c8  = {:12}", c8_val );
+    println!("d8  = {:12}", d8_val );
     println!("a16 = {:12}", a16_val);
     println!("b16 = {:12}", b16_val);
     println!("a32 = {:12}", a32_val);
@@ -118,6 +124,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let cb4  = pu.encrypt_vec(&b4 )?;
     let ca8  = pu.encrypt_vec(&a8 )?;
     let cb8  = pu.encrypt_vec(&b8 )?;
+    let cc8  = pu.encrypt_vec(&c8 )?;
+    let cd8  = pu.encrypt_vec(&d8 )?;
     let ca16 = pu.encrypt_vec(&a16)?;
     let cb16 = pu.encrypt_vec(&b16)?;
     let ca32 = pu.encrypt_vec(&a32)?;
@@ -295,34 +303,47 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // =========================================================================
     //  NN Evaluation
 
-    // some very simple NN
+    #[cfg(feature = "nn")]
+    let c_nn_out: Vec<ParmCiphertext>;
+    #[cfg(feature = "nn")]
+    let m_nn_out: Vec<i64>;
+    #[cfg(feature = "nn")]
+    {
+    // evaluation of a simple NN
+    let c_nn_in = vec![   ca8,    cb8,    cc8,    cd8];   // .clone()
+    let m_nn_in = vec![a8_val, b8_val, c8_val, d8_val];   // .clone()
 
-    //TODO format & use nn macro
-    //~ let nn = NeuralNetwork {
-        //~ layers: vec![
-            //~ vec![
-                //~ Perceptron {
-                    //~ t: PercType::MAX,
-                    //~ w: vec![1,-2,-2,],
-                    //~ b: 2,
-                //~ },
-                //~ Perceptron {
-                    //~ t: PercType::LIN,
-                    //~ w: vec![1,3,-1,],
-                    //~ b: -5,
-                //~ },
-                //~ Perceptron {
-                    //~ t: PercType::ACT,
-                    //~ w: vec![1,3,-1,],
-                    //~ b: 3,
-                //~ },
-            //~ ],
-        //~ ],
-        //~ pc: &pc,
-    //~ };
+    let nn = NeuralNetwork {
+        layers: vec![
+            vec![
+                Perceptron {
+                    t: PercType::MAX,
+                    w: vec![1,-2,-2,],
+                    b: 2,
+                },
+                Perceptron {
+                    t: PercType::LIN,
+                    w: vec![1,3,-1,],
+                    b: -5,
+                },
+                Perceptron {
+                    t: PercType::ACT,
+                    w: vec![1,3,-1,],
+                    b: 3,
+                },
+            ],
+        ],
+        pc: &pc,
+    };
 
-    //~ let c_out = nn.eval(&c_in);
-    //~ let m_out_plain = nn.eval(&m_in);
+    parmesan::simple_duration!(
+        ["neural network evaluation: NN(a8, b8, c8, d8)   (??? BS)"],
+        [
+            c_nn_out = nn.eval(&c_nn_in);
+        ]
+    );
+    m_nn_out = nn.eval(&m_nn_in);
+    }
 
 
 
@@ -438,6 +459,20 @@ fn bench() -> Result<(), Box<dyn Error>> {
                                 (*ki as i64) * a16_val
         );
     }
+    }
+
+    #[cfg(feature = "nn")]
+    {
+    let mut nn_out_homo: Vec<i64> = Vec::new();
+    for ci in c_nn_out {
+        nn_out_homo.push(pu.decrypt(&ci)?);
+    }
+    summary_text = format!("{}\n\nNeural Network Evaluation:", summary_text);
+    summary_text = format!("{}\nNN(a8, b8, c8, d8) = {:?} :: {} (exp. {:?})", summary_text,
+                            nn_out_homo,
+                            if nn_out_homo == m_nn_out {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            m_nn_out
+    );
     }
 
     println!("{}\n", summary_text);
