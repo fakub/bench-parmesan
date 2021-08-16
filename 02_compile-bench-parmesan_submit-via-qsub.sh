@@ -46,9 +46,9 @@ cp \
     #~ . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
 # clone repos
-git clone --depth=1 --branch negacyclic git@github.com:fakub/concrete.git
-git clone --depth=1 --branch nn git@gitlab.fit.cvut.cz:klemsjak/parmesan.git
-git clone --depth=1 git@gitlab.fit.cvut.cz:klemsjak/bench-parmesan.git
+git clone --depth=1 --branch negacyclic https://github.com/fakub/concrete.git
+git clone --depth=1                     https://gitlab.fit.cvut.cz/klemsjak/parmesan.git
+git clone --depth=1                     https://gitlab.fit.cvut.cz/klemsjak/bench-parmesan.git
 
 # compile (cascadelake processor type is at Samson)
 cd bench-parmesan
