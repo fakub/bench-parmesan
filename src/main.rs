@@ -310,10 +310,10 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "nn")]
     {
     // evaluation of a simple NN
-    let c_nn_in = vec![   ca8,    cb8,    cc8,    cd8];   // .clone()
-    let m_nn_in = vec![a8_val, b8_val, c8_val, d8_val];   // .clone()
+    let c_nn_in           = vec![   ca8,    cb8,    cc8,    cd8];   // .clone()
+    let m_nn_in: Vec<i64> = vec![a8_val, b8_val, c8_val, d8_val];   // .clone()
 
-    let nn = NeuralNetwork {
+    let _nn = NeuralNetwork {
         layers: vec![
             vec![
                 Perceptron {
@@ -333,16 +333,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 },
             ],
         ],
-        pc: &pc,
     };
 
     parmesan::simple_duration!(
         ["neural network evaluation: NN(a8, b8, c8, d8)   (??? BS)"],
         [
-            c_nn_out = nn.eval(&c_nn_in);
+            c_nn_out = parmesan::demo_nn().eval(&pc, &c_nn_in);
         ]
     );
-    m_nn_out = nn.eval(&m_nn_in);
+    m_nn_out = parmesan::demo_nn().eval(&pc, &m_nn_in);
     }
 
 
