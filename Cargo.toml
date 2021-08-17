@@ -12,7 +12,7 @@ rayon = "^1.5.1"
 
 [features]
 add = []
-sgn = []
+sgn = ["add"]
 max = []
 mul = []
 scm = []

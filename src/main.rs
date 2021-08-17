@@ -7,9 +7,11 @@ use parmesan::ciphertexts::ParmCiphertext;
 use parmesan::userovo::*;
 use parmesan::ParmesanUserovo;
 
+#[cfg(feature = "nn")]
 use parmesan::cloudovo::neural_network::{NeuralNetwork, Perceptron, PercType};
 use parmesan::ParmesanCloudovo;
 
+#[cfg(not(feature = "nn"))]
 use parmesan::arithmetics::ParmArithmetics;
 
 fn main() {
@@ -77,7 +79,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let b32: Vec<i32> = vec![1,-1,-1,-1,1,-1,1,-1,0,1,-1,0,1,0,1,0,-1,1,1,-1,1,-1,-1,0,0,-1,-1,0,-1,-1,-1,0,];
 
     // random scalars
-    let k: [i32; 3] = [-161, 128, 1023];
+    let _k: [i32; 3] = [-161, 128, 1023];
 
     // convert to actual numbers
     let a_val = encryption::convert(&a)?;
@@ -115,21 +117,21 @@ fn bench() -> Result<(), Box<dyn Error>> {
     println!("b32 = {:12}\n", b32_val);
 
     // encrypt values
-    let ca = pu.encrypt_vec(&a)?;
-    let cb = pu.encrypt_vec(&b)?;
-    let cc = pu.encrypt_vec(&c)?;
-    let cd = pu.encrypt_vec(&d)?;
+    let _ca = pu.encrypt_vec(&a)?;
+    let _cb = pu.encrypt_vec(&b)?;
+    let _cc = pu.encrypt_vec(&c)?;
+    let _cd = pu.encrypt_vec(&d)?;
 
-    let ca4  = pu.encrypt_vec(&a4 )?;
-    let cb4  = pu.encrypt_vec(&b4 )?;
-    let ca8  = pu.encrypt_vec(&a8 )?;
-    let cb8  = pu.encrypt_vec(&b8 )?;
-    let cc8  = pu.encrypt_vec(&c8 )?;
-    let cd8  = pu.encrypt_vec(&d8 )?;
-    let ca16 = pu.encrypt_vec(&a16)?;
-    let cb16 = pu.encrypt_vec(&b16)?;
-    let ca32 = pu.encrypt_vec(&a32)?;
-    let cb32 = pu.encrypt_vec(&b32)?;
+    let _ca4  = pu.encrypt_vec(&a4 )?;
+    let _cb4  = pu.encrypt_vec(&b4 )?;
+    let _ca8  = pu.encrypt_vec(&a8 )?;
+    let _cb8  = pu.encrypt_vec(&b8 )?;
+    let _cc8  = pu.encrypt_vec(&c8 )?;
+    let _cd8  = pu.encrypt_vec(&d8 )?;
+    let _ca16 = pu.encrypt_vec(&a16)?;
+    let _cb16 = pu.encrypt_vec(&b16)?;
+    let _ca32 = pu.encrypt_vec(&a32)?;
+    let _cb32 = pu.encrypt_vec(&b32)?;
 
 
 
@@ -148,13 +150,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["1st level addition: a + b   (no BS)"],
         [
-            c_add_a_b = ParmArithmetics::add(&pc, &ca, &cb);
+            c_add_a_b = ParmArithmetics::add(&pc, &_ca, &_cb);
         ]
     );
     parmesan::simple_duration!(
         ["1st level subtraction: c - d   (no BS)"],
         [
-            c_sub_c_d = ParmArithmetics::sub(&pc, &cc, &cd);
+            c_sub_c_d = ParmArithmetics::sub(&pc, &_cc, &_cd);
         ]
     );
 
@@ -185,7 +187,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["1st level signum: sgn(a)   (no BS)"],
         [
-            c_sgn_a = ParmArithmetics::sgn(&pc, &ca);
+            c_sgn_a = ParmArithmetics::sgn(&pc, &_ca);
         ]
     );
 
@@ -214,13 +216,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["1st level maximum: max(a, b)   (no BS)"],
         [
-            c_max_a_b = ParmArithmetics::max(&pc, &ca, &cb);
+            c_max_a_b = ParmArithmetics::max(&pc, &_ca, &_cb);
         ]
     );
     parmesan::simple_duration!(
         ["1st level maximum: max(c, d)   (no BS)"],
         [
-            c_max_c_d = ParmArithmetics::max(&pc, &cc, &cd);
+            c_max_c_d = ParmArithmetics::max(&pc, &_cc, &_cd);
         ]
     );
 
@@ -251,7 +253,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["4-word multiplication: a4 × b4"],
         [
-            c_mul4_a_b = ParmArithmetics::mul(&pc, &ca4, &cb4);
+            c_mul4_a_b = ParmArithmetics::mul(&pc, &_ca4, &_cb4);
         ]
     );
 
@@ -259,7 +261,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["8-word multiplication: a8 × b8"],
         [
-            c_mul8_a_b = ParmArithmetics::mul(&pc, &ca8, &cb8);
+            c_mul8_a_b = ParmArithmetics::mul(&pc, &_ca8, &_cb8);
         ]
     );
 
@@ -267,7 +269,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["16-word multiplication: a16 × b16"],
         [
-            c_mul16_a_b = ParmArithmetics::mul(&pc, &ca16, &cb16);
+            c_mul16_a_b = ParmArithmetics::mul(&pc, &_ca16, &_cb16);
         ]
     );
 
@@ -275,7 +277,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     parmesan::simple_duration!(
         ["32-word multiplication: a32 × b32"],
         [
-            c_mul32_a_b = ParmArithmetics::mul(&pc, &ca32, &cb32);
+            c_mul32_a_b = ParmArithmetics::mul(&pc, &_ca32, &_cb32);
         ]
     );
     }
@@ -289,11 +291,11 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "scm")]
     {
     // scalar multiplication of 16-word
-    for ki in k {
+    for ki in _k {
         parmesan::simple_duration!(
             ["scalar multiplication: {}/0b{:b}/ × a16   (with BS)", ki, ki.abs()],
             [
-                c_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &ca16));
+                c_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &_ca16));
             ]
         );
     }
@@ -310,7 +312,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "nn")]
     {
     // evaluation of a simple NN
-    let c_nn_in           = vec![   ca8,    cb8,    cc8,    cd8];   // .clone()
+    let c_nn_in           = vec![   _ca8,    _cb8,    _cc8,    _cd8];   // .clone()
     let m_nn_in: Vec<i64> = vec![a8_val, b8_val, c8_val, d8_val];   // .clone()
 
     let _nn = NeuralNetwork {
@@ -451,7 +453,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
         scm16_a.push(pu.decrypt(&ci)?);
     }
     summary_text = format!("{}\n\nScalar Multiplication:", summary_text);
-    for (ki, scmi) in k.iter().zip(scm16_a.iter()) {
+    for (ki, scmi) in _k.iter().zip(scm16_a.iter()) {
         summary_text = format!("{}\n{:7} × a16 = {:12} :: {} (exp. {})", summary_text,
                                 ki, scmi,
                                 if *scmi == (*ki as i64) * a16_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
