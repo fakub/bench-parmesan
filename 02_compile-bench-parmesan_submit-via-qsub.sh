@@ -1,5 +1,9 @@
 #!/bin/bash
 #PBS -l select=1:ncpus=56:mem=1gb:scratch_local=1gb:cluster=samson
+# alternative clusters:
+#   samson      (4x Intel Xeon Platinum 8280 (4x 28 Core) 2.70 - 4.00 GHz),
+#   kirke, elwe (64x AMD  EPYC          7532 (64x32 Core) 2.40 - 3.30 GHz),
+#   eltu        (4x Intel Xeon Platinum 8260 (4x 24 Core) 2.40 - 3.90 GHz).
 # consider:
 #PBS -l place=exclhost
 #PBS -l walltime=00:30:00

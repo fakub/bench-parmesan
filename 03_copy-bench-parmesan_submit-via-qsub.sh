@@ -1,5 +1,6 @@
 #!/bin/bash
 #PBS -l select=1:ncpus=56:mem=1gb:scratch_local=1gb:cluster=samson
+# check alternative clusters in 02 script
 # consider:
 #PBS -l place=exclhost
 #PBS -l walltime=00:30:00
