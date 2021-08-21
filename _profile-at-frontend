@@ -1,0 +1,16 @@
+#
+# Clusters and their specs:
+#
+#   samson      4x Intel Xeon Platinum 8280     cerit-pbs.cerit-sc.cz            4x56 threads (  224 threads on  4x28 CPU's)        cascadelake
+#   eltu        4x Intel Xeon Platinum 8260     elixir-pbs.elixir-czech.cz       4x48 threads (  192 threads on  4x24 CPU's)        cascadelake
+#   elwe        64x AMD EPYC 7532               elixir-pbs.elixir-czech.cz      64x64 threads (4 096 threads on 64x32 CPU's)        znver2
+#   kirke       64x AMD EPYC 7532               meta-pbs.metacentrum.cz         dtto
+#
+DEF_PBS=cerit-pbs.cerit-sc.cz
+
+echo -e "(!) Setting default PBS server to:\n\n    $DEF_PBS    (changeme in .profile)\n"
+export PBS_SERVER=$DEF_PBS
+
+echo -e "(!) Consider running   $ kinit   to generate Kerberos tickets.\n"
+
+. "$HOME/.cargo/env"

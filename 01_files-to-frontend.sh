@@ -2,12 +2,19 @@
 
 # copy to frontend
 echo
-echo ">>> Copy files to frontend"
+echo -e ">>> Copy files to frontend\n"
+
+# copy scripts
 scp \
-    02_compile-bench-parmesan_submit-via-qsub.sh \
+    02_compile-at-frontend.sh \
     03_copy-bench-parmesan_submit-via-qsub.sh \
     xx_processor-info.sh \
     skirit:~/parallel-arithmetics-benchmark/
+
+# copy .profile
+scp \
+    _profile-at-frontend \
+    skirit:~/.profile
 
 echo "(check that ALL keys are already copied: SK, BK, KSK)"
 echo "(check branches in 02_...sh -- in particular parmesan)"
