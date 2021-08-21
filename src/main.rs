@@ -11,7 +11,7 @@ use parmesan::ParmesanUserovo;
 use parmesan::cloudovo::neural_network::{NeuralNetwork, Perceptron, PercType};
 use parmesan::ParmesanCloudovo;
 
-#[cfg(not(feature = "nn"))]
+//TODO this fails if there is nn together with some arithmetics: #[cfg(not(feature = "nn"))]
 use parmesan::arithmetics::ParmArithmetics;
 
 fn main() {
