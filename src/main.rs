@@ -79,7 +79,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let b32: Vec<i32> = vec![1,-1,-1,-1,1,-1,1,-1,0,1,-1,0,1,0,1,0,-1,1,1,-1,1,-1,-1,0,0,-1,-1,0,-1,-1,-1,0,];
 
     // random scalars
-    let _k: [i32; 3] = [-161, 128, 1023];
+    let _k: [i32; 5] = [    // Hamming weight after optimization:
+        -161,               // 3:   0   1   0   1   0   0   0   0   1
+        0b11101111,         // 3:   1   0   0   0  -1   0   0   0  -1
+        0b11100111,         // 4:   1   0   0  -1   0   1   0   0  -1
+        0b10101010,         // 4:   0   1   0   1   0   1   0   1   0
+        0b11011011,         // 4:   1   0   0  -1   0   0  -1   0  -1
+    ];
 
     // convert to actual numbers
     let a_val = encryption::convert(&a)?;
