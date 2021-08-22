@@ -400,20 +400,20 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let sub_c_d     = pu.decrypt(&c_sub_c_d     )?;
     let add_ab_cnd  = pu.decrypt(&c_add_ab_cnd  )?;
     summary_text = format!("{}\n\nAddition:", summary_text);
-    summary_text = format!("{}\na + b         = {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\na + b         = {:12} :: {} (exp. {})", summary_text,
                             add_a_b,
-                            if (a_val + b_val - add_a_b) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (a_val + b_val) % (1 << 32), 1u64 << 32
+                            if add_a_b == a_val + b_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a_val + b_val
     );
-    summary_text = format!("{}\nc - d         = {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\nc - d         = {:12} :: {} (exp. {})", summary_text,
                             sub_c_d,
-                            if (c_val - d_val - sub_c_d) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (c_val - d_val) % (1 << 32), 1u64 << 32
+                            if sub_c_d == c_val - d_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            c_val - d_val
     );
-    summary_text = format!("{}\n(a+b) + (c-d) = {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\n(a+b) + (c-d) = {:12} :: {} (exp. {})", summary_text,
                             add_ab_cnd,
-                            if (add_a_b + sub_c_d - add_ab_cnd) % (1 << 32) == 0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (add_a_b + sub_c_d) % (1 << 32), 1u64 << 32
+                            if add_ab_cnd == add_a_b + sub_c_d {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            add_a_b + sub_c_d
     );
     }
 
@@ -422,15 +422,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let sgn_a       = pu.decrypt(&c_sgn_a       )?;
     let sgn_abcnd   = pu.decrypt(&c_sgn_abcnd   )?;
     summary_text = format!("{}\n\nSignum:", summary_text);
-    summary_text = format!("{}\nsgn(a)        = {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\nsgn(a)        = {:12} :: {} (exp. {})", summary_text,
                             sgn_a,
                             if sgn_a == a_val.signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            a_val.signum() % (1 << 32), 1u64 << 32
+                            a_val.signum()
     );
-    summary_text = format!("{}\nsgn(a+b+c-d)  = {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\nsgn(a+b+c-d)  = {:12} :: {} (exp. {})", summary_text,
                             sgn_abcnd,
                             if sgn_abcnd == (a_val + b_val + c_val - d_val).signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (a_val + b_val + c_val - d_val).signum() % (1 << 32), 1u64 << 32
+                            (a_val + b_val + c_val - d_val).signum()
     );
     }
 
@@ -440,20 +440,20 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let max_c_d     = pu.decrypt(&c_max_c_d     )?;
     let max_mab_mcd = pu.decrypt(&c_max_mab_mcd )?;
     summary_text = format!("{}\n\nMaximum:", summary_text);
-    summary_text = format!("{}\nmax{{a, b}}     = {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\nmax{{a, b}}     = {:12} :: {} (exp. {})", summary_text,
                             max_a_b,
                             if max_a_b == std::cmp::max(a_val, b_val) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            std::cmp::max(a_val, b_val) % (1 << 32), 1u64 << 32
+                            std::cmp::max(a_val, b_val)
     );
-    summary_text = format!("{}\nmax{{c, d}}     = {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\nmax{{c, d}}     = {:12} :: {} (exp. {})", summary_text,
                             max_c_d,
                             if max_c_d == std::cmp::max(c_val, d_val) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            std::cmp::max(c_val, d_val) % (1 << 32), 1u64 << 32
+                            std::cmp::max(c_val, d_val)
     );
-    summary_text = format!("{}\nmax{{m_ab,m_cd}}= {:12} :: {} (exp. {} % {})", summary_text,
+    summary_text = format!("{}\nmax{{m_ab,m_cd}}= {:12} :: {} (exp. {})", summary_text,
                             max_mab_mcd,
                             if max_mab_mcd == std::cmp::max(max_a_b, max_c_d) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            std::cmp::max(max_a_b, max_c_d) % (1 << 32), 1u64 << 32
+                            std::cmp::max(max_a_b, max_c_d)
     );
     }
 
