@@ -50,6 +50,7 @@ cp \
     #~ . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
 # run main command(s)
+#TODO dstat --cpu-use -t > cpu-use_AMD.log &
 ./bench-parmesan_znver2-AMD || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
 # copy output files (if any)
