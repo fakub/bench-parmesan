@@ -7,7 +7,8 @@ echo -e ">>> Copy files to frontend\n"
 # copy scripts
 scp \
     02_compile-at-frontend.sh \
-    03_copy-bench-parmesan_submit-via-qsub.sh \
+    03_bench-parmesan_samson_submit-via-qsub.sh \
+    03_bench-parmesan_kirke_submit-via-qsub.sh \
     xx_processor-info.sh \
     skirit:~/parallel-arithmetics-benchmark/
 
