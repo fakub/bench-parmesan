@@ -20,6 +20,9 @@ use parmesan::ParmesanCloudovo;
 #[allow(unused_imports)]
 use parmesan::arithmetics::ParmArithmetics;
 
+extern crate chrono;
+use chrono::Utc;
+
 fn main() {
     println!();
     parmesan::simple_duration!(
