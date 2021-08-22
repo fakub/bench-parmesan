@@ -3,6 +3,8 @@ run:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release
 
 # bench only selected feature
+pbs:
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "pbs"
 add:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "add"
 sgn:

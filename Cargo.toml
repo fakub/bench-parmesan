@@ -11,10 +11,11 @@ colored = "2.0.0"
 rayon = "^1.5.1"
 
 [features]
+pbs = []
 add = []
 sgn = ["add"]
 max = []
 mul = []
 scm = []
 nn  = []
-default   = ["add", "sgn", "max", "mul", "scm", "nn"]
+default   = ["pbs", "add", "sgn", "max", "mul", "scm", "nn"]

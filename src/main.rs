@@ -2,16 +2,22 @@ use std::error::Error;
 use colored::Colorize;
 
 use parmesan::params;
-use parmesan::ciphertexts::ParmCiphertext;
+#[allow(unused_imports)]
+use parmesan::ciphertexts::{ParmCiphertext, ParmCiphertextExt};
 
 use parmesan::userovo::*;
 use parmesan::ParmesanUserovo;
+
+#[cfg(feature = "pbs")]
+use parmesan::cloudovo::pbs;
+#[cfg(feature = "pbs")]
+const PBS_N: usize = 10;
 
 #[cfg(feature = "nn")]
 use parmesan::cloudovo::neural_network::{NeuralNetwork, Perceptron, PercType};
 use parmesan::ParmesanCloudovo;
 
-//TODO this fails if there is nn together with some arithmetics: #[cfg(not(feature = "nn"))]
+#[allow(unused_imports)]
 use parmesan::arithmetics::ParmArithmetics;
 
 fn main() {
@@ -78,7 +84,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let a32: Vec<i32> = vec![-1,-1,1,0,-1,0,-1,0,1,-1,-1,0,1,-1,0,-1,0,-1,1,1,1,-1,1,-1,0,0,-1,0,0,1,1,0,];
     let b32: Vec<i32> = vec![1,-1,-1,-1,1,-1,1,-1,0,1,-1,0,1,0,1,0,-1,1,1,-1,1,-1,-1,0,0,-1,-1,0,-1,-1,-1,0,];
 
-    // random scalars
+    // "random" scalars
     let _k: [i32; 5] = [    // Hamming weight after optimization:
         -161,               // 3:   0   1   0   1   0   0   0   0   1
         0b11101111,         // 3:   1   0   0   0  -1   0   0   0  -1
@@ -140,6 +146,24 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let _cb32 = pu.encrypt_vec(&b32)?;
 
 
+    // =========================================================================
+    //  Programmable Bootstrapping
+
+    #[cfg(feature = "pbs")]
+    let mut _c_pbs_id_a = ParmCiphertext::single(_ca[0].clone());
+    #[cfg(feature = "pbs")]
+    {
+    // first level addition/subtraction:   a + b   ,   c - d
+    parmesan::simple_duration!(
+        ["Programmable bootstrapping {}x", PBS_N],
+        [
+            for _ in 0..PBS_N {
+                _c_pbs_id_a = ParmCiphertext::single(pbs::id(&pc.pub_keys, &_ca[0])?);
+            }
+        ]
+    );
+    }
+
 
     // =========================================================================
     //  Addition
@@ -177,7 +201,6 @@ fn bench() -> Result<(), Box<dyn Error>> {
         ]
     );
     }
-
 
 
     // =========================================================================
@@ -353,13 +376,24 @@ fn bench() -> Result<(), Box<dyn Error>> {
     }
 
 
-
     // =========================================================================
     //  Decrypt & Check Correctness
 
+    #[allow(unused_mut)]
     let mut summary_text = format!("\n{}:", String::from("Results").bold().yellow());
 
     // decrypt & verify all results
+    #[cfg(feature = "pbs")]
+    {
+    let pbs_id_a0   = pu.decrypt(&_c_pbs_id_a)?;
+    summary_text = format!("{}\n\nProgrammable Bootstrapping:", summary_text);
+    summary_text = format!("{}\nid(a[0])      = {:12} :: {} (exp. {})", summary_text,
+                            pbs_id_a0,
+                            if a[0] as i64 == pbs_id_a0 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a[0]
+    );
+    }
+
     #[cfg(feature = "add")]
     {
     let add_a_b     = pu.decrypt(&c_add_a_b     )?;
