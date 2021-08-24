@@ -1,6 +1,6 @@
 [package]
 name = "bench-parmesan"
-version = "0.0.7"
+version = "0.0.8"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -17,6 +17,7 @@ add = []
 sgn = ["add"]
 max = []
 mul = []
+squ = []
 scm = []
 nn  = []
-default   = ["pbs", "add", "sgn", "max", "mul", "scm", "nn"]
+default   = ["pbs", "add", "sgn", "max", "mul", "squ", "scm", "nn"]

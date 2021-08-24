@@ -69,7 +69,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // =========================================================================
     //  Generate & Encrypt inputs
 
-    // 4 random 32-word sequences of {-1,0,1}
+    // 4 random 31-word sequences of {-1,0,1}
     let a: Vec<i32> = vec![1,0,1,-1,-1,0,-1,1,1,-1,1,1,1,-1,-1,0,0,1,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,];
     let b: Vec<i32> = vec![-1,0,0,-1,1,1,-1,1,-1,0,0,1,0,1,1,0,0,0,-1,0,0,1,0,0,-1,0,-1,-1,-1,1,1,0,];
     let c: Vec<i32> = vec![-1,1,-1,1,-1,1,0,0,-1,0,-1,1,0,0,1,1,1,1,1,0,-1,0,0,-1,1,0,1,1,-1,-1,0,];
@@ -281,7 +281,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let c_mul32_a_b: ParmCiphertext;
     #[cfg(feature = "mul")]
     {
-    // 4-word multiplication -> 8-word (congruent mod 2^8, can have negative sign, not good for comparison .. ???)
+    // 4-word multiplication -> 8-word
     parmesan::simple_duration!(
         ["4-word multiplication: a4 × b4"],
         [
@@ -289,7 +289,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
         ]
     );
 
-    // 8-word multiplication -> 16-word (...)
+    // 8-word multiplication -> 16-word
     parmesan::simple_duration!(
         ["8-word multiplication: a8 × b8"],
         [
@@ -297,7 +297,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
         ]
     );
 
-    // 16-word multiplication -> 32-word (...)
+    // 16-word multiplication -> 33-word
     parmesan::simple_duration!(
         ["16-word multiplication: a16 × b16"],
         [
@@ -305,11 +305,58 @@ fn bench() -> Result<(), Box<dyn Error>> {
         ]
     );
 
-    // 32-word multiplication -> 64-word (...)
+    // 32-word multiplication -> 66-word (if there happen to be zeros at the leading positions after decryption, it PASSes)
     parmesan::simple_duration!(
         ["32-word multiplication: a32 × b32"],
         [
             c_mul32_a_b = ParmArithmetics::mul(&pc, &_ca32, &_cb32);
+        ]
+    );
+    }
+
+
+    // =========================================================================
+    //  Squaring
+
+    #[cfg(feature = "squ")]
+    let c_squ_a4: ParmCiphertext;
+    #[cfg(feature = "squ")]
+    let c_squ_a8: ParmCiphertext;
+    #[cfg(feature = "squ")]
+    let c_squ_a16: ParmCiphertext;
+    #[cfg(feature = "squ")]
+    let c_squ_a32: ParmCiphertext;
+    #[cfg(feature = "squ")]
+    {
+    // 4-word squaring -> 9-word (?)
+    parmesan::simple_duration!(
+        ["4-word squaring: a4 ^ 2"],
+        [
+            c_squ_a4 = ParmArithmetics::squ(&pc, &_ca4);
+        ]
+    );
+
+    // 8-word squaring -> 18-word (?)
+    parmesan::simple_duration!(
+        ["8-word squaring: a8 ^ 2"],
+        [
+            c_squ_a8 = ParmArithmetics::squ(&pc, &_ca8);
+        ]
+    );
+
+    // 16-word squaring -> 35-word (?)
+    parmesan::simple_duration!(
+        ["16-word squaring: a16 ^ 2"],
+        [
+            c_squ_a16 = ParmArithmetics::squ(&pc, &_ca16);
+        ]
+    );
+
+    // 32-word squaring -> 68-word (?)
+    parmesan::simple_duration!(
+        ["32-word squaring: a32 ^ 2"],
+        [
+            c_squ_a32 = ParmArithmetics::squ(&pc, &_ca32);
         ]
     );
     }
@@ -486,6 +533,35 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             mul32_a_b,
                             if mul32_a_b == a32_val * b32_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a32_val * b32_val
+    );
+    }
+
+    #[cfg(feature = "squ")]
+    {
+    let squ_a4      = pu.decrypt(&c_squ_a4      )?;
+    let squ_a8      = pu.decrypt(&c_squ_a8      )?;
+    let squ_a16     = pu.decrypt(&c_squ_a16     )?;
+    let squ_a32     = pu.decrypt(&c_squ_a32     )?;
+    summary_text = format!("{}\n\nSquaring:", summary_text);
+    summary_text = format!("{}\na4 ^ 2        = {:22} :: {} (exp. {})", summary_text,
+                            squ_a4,
+                            if squ_a4 == a4_val * a4_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a4_val * a4_val
+    );
+    summary_text = format!("{}\na8 ^ 2        = {:22} :: {} (exp. {})", summary_text,
+                            squ_a8,
+                            if squ_a8 == a8_val * a8_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a8_val * a8_val
+    );
+    summary_text = format!("{}\na16 ^ 2       = {:22} :: {} (exp. {})", summary_text,
+                            squ_a16,
+                            if squ_a16 == a16_val * a16_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a16_val * a16_val
+    );
+    summary_text = format!("{}\na32 ^ 2       = {:22} :: {} (exp. {})", summary_text,
+                            squ_a32,
+                            if squ_a32 == a32_val * a32_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a32_val * a32_val
     );
     }
 

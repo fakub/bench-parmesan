@@ -13,6 +13,8 @@ max:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "max"
 mul:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "mul"
+squ:
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "squ"
 scm:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "scm"
 nn:
