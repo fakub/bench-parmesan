@@ -41,13 +41,14 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // =========================================================================
     //  Prepare userovo & cloudovo
 
+    // not used at the moment
     #[cfg(not(feature = "sequential"))]
     println!("\n\n{}: {} threads\n", String::from("Parallel").bold().yellow(), rayon::current_num_threads());
     #[cfg(feature = "sequential")]
     println!("\n\n{}\n", String::from("Sequential").bold().yellow());
 
     // parameters
-    let par = &params::PARM90__PI_5__D_20__LEN_32;   //     PARM90__PI_5__D_20__LEN_32      PARMXX__TRIVIAL
+    let par = &params::PARM90__PI_5__D_20__F;   //     PARM90__PI_5__D_20__F      PARMXX__TRIVIAL
 
     parmesan::simple_duration!(
         ["Setup/load keys"],
@@ -161,7 +162,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
         ["Programmable bootstrapping {}x", PBS_N],
         [
             for _ in 0..PBS_N {
-                _c_pbs_id_a = ParmCiphertext::single(pbs::id(&pc.pub_keys, &_ca[0])?);
+                _c_pbs_id_a = ParmCiphertext::single(pbs::id__pi_5(&pc.pub_keys, &_ca[0])?);
             }
         ]
     );
