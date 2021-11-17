@@ -3,10 +3,10 @@
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
-#   samson      4x Intel Xeon Platinum 8280     cerit-pbs.cerit-sc.cz            4x56 threads (  224)       cascadelake             2.70 - 4.00 GHz
-#   eltu        4x Intel Xeon Platinum 8260     elixir-pbs.elixir-czech.cz       4x48 threads (  192)       cascadelake             2.40 - 3.90 GHz
-#   elwe        64x AMD EPYC 7532               elixir-pbs.elixir-czech.cz      64x64 threads (4 096)       znver2                  2.40 - 3.30 GHz
-#   kirke       64x AMD EPYC 7532               meta-pbs.metacentrum.cz         dtto
+#   samson      4x Intel Xeon Platinum 8280     cerit-pbs.cerit-sc.cz           4x56 threads (224)          cascadelake             2.70 - 4.00 GHz
+#   eltu        4x Intel Xeon Platinum 8260     elixir-pbs.elixir-czech.cz      4x48 threads (192)          cascadelake             2.40 - 3.90 GHz
+#   elwe        2x AMD EPYC 7532                elixir-pbs.elixir-czech.cz      2x64 threads (128)          znver2                  2.40 - 3.30 GHz
+#   kirke_x     2x AMD EPYC 7532                meta-pbs.metacentrum.cz         dtto
 #
 # consider: #PBS -l place=exclhost
 #
