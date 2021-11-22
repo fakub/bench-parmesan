@@ -8,7 +8,7 @@
 #   elwe        2x AMD EPYC 7532                elixir-pbs.elixir-czech.cz      2x64 threads (128)          znver2                  2.40 - 3.30 GHz
 #   kirke_x     2x AMD EPYC 7532                meta-pbs.metacentrum.cz         dtto
 #
-export PBS_SERVER=elixir-pbs.elixir-czech.cz
+export PBS_SERVER=meta-pbs.metacentrum.cz
 
 echo "(!) Setting PBS server to    $PBS_SERVER    (changeme in .profile)"
 echo "(i) Other PBS servers:"
