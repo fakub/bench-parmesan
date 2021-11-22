@@ -1,5 +1,5 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=56:mem=1gb:scratch_local=1gb:cluster=samson
+#PBS -l select=1:ncpus=128:mem=1gb:scratch_local=1gb:vnode=elwe1
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
@@ -11,7 +11,7 @@
 # consider: #PBS -l place=exclhost
 #
 #PBS -l walltime=00:10:00
-#PBS -N parmesan-bench
+#PBS -N parmesan-bench_elwe
 #PBS -j oe
 #PBS -m ae
 #PBS -M fakubo@gmail.com
@@ -27,6 +27,7 @@
 
 # initialize required modules (if any)
 module add fftw/fftw-3.3.8-intel-19.0.4-532p634
+#~ module add fftw/fftw-3.3.8-intel-20.0.0-au2vxr2
 
 # clean the SCRATCH when job finishes (and data are successfully copied out) or is killed
 trap 'clean_scratch' TERM EXIT
@@ -35,14 +36,24 @@ trap 'clean_scratch' TERM EXIT
 test -n "$SCRATCHDIR" || { echo >&2 "Variable SCRATCHDIR is not set!"; exit 1; }
 cd $SCRATCHDIR
 
-DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
+# declare which binary is to be executed
+BINARY="bench-parmesan_PBS_znver2-AMD"
+#~ bench-parmesan_ALL_znver2-AMD
+#~ bench-parmesan_PBS_znver2-AMD
+#~ bench-parmesan_ADD_znver2-AMD
+#~ bench-parmesan_SGN_znver2-AMD
+#~ bench-parmesan_MAX_znver2-AMD
+#~ bench-parmesan_MUL_znver2-AMD
+#~ bench-parmesan_SCM_znver2-AMD
+#~ bench-parmesan_NN_znver2-AMD
 
-# copy keys & pre-compiled binary:   bench-parmesan_znver2-AMD   or   bench-parmesan_cascadelake-XEON
+# copy keys & pre-compiled binary:   bench-parmesan_XXX_znver2-AMD   or   bench-parmesan_XXX_cascadelake-XEON
+DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 cp \
     $DATA_DIR/keys/secret-key__n-560.key \
     $DATA_DIR/keys/bootstrapping-keys__n-560_k-1_N-1024_gamma-10_l-2.key \
     $DATA_DIR/keys/key-switching-keys__n-560_k-1_N-1024_kappa-1_t-16.key \
-    $DATA_DIR/bench-parmesan_cascadelake-XEON \
+    $DATA_DIR/bin/$BINARY \
     . || { echo >&2 "Error while copying input file(s)!"; exit 2; }
 
 #~ cp -r \
@@ -50,8 +61,8 @@ cp \
     #~ . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
 # run main command(s)
-#TODO dstat --cpu-use -t > cpu-use_XEON.log &
-./bench-parmesan_cascadelake-XEON || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
+#TODO dstat --cpu-use -t > cpu-use_AMD.log &
+./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
 # copy output files (if any)
 # cp output $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Result file(s) copying failed! Try to copy them manually."; exit 6; }

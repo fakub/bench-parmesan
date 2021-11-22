@@ -415,6 +415,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 },
             ],
         ],
+        n_inputs: 3,
     };
 
     parmesan::simple_duration!(
