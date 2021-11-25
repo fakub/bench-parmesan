@@ -38,31 +38,36 @@ cd $SCRATCHDIR
 
 # declare which binary is to be executed
 BINARY="bench-parmesan_PBS_cascadelake-XEON"
-#~ bench-parmesan_ALL_znver2-AMD
-#~ bench-parmesan_PBS_znver2-AMD
-#~ bench-parmesan_ADD_znver2-AMD
-#~ bench-parmesan_SGN_znver2-AMD
-#~ bench-parmesan_MAX_znver2-AMD
-#~ bench-parmesan_MUL_znver2-AMD
-#~ bench-parmesan_SCM_znver2-AMD
-#~ bench-parmesan_NN_znver2-AMD
+#~ bench-parmesan_ALL_cascadelake-XEON
+#~ bench-parmesan_PBS_cascadelake-XEON
+#~ bench-parmesan_ADD_cascadelake-XEON
+#~ bench-parmesan_SGN_cascadelake-XEON
+#~ bench-parmesan_MAX_cascadelake-XEON
+#~ bench-parmesan_MUL_cascadelake-XEON
+#~ bench-parmesan_SCM_cascadelake-XEON
+#~ bench-parmesan_NN_cascadelake-XEON
 
-# copy keys & pre-compiled binary:   bench-parmesan_XXX_znver2-AMD   or   bench-parmesan_XXX_cascadelake-XEON
+# copy files: keys, pre-compiled binary, measurement scripts
 DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 cp \
     $DATA_DIR/keys/secret-key__n-560.key \
     $DATA_DIR/keys/bootstrapping-keys__n-560_k-1_N-1024_gamma-10_l-2.key \
     $DATA_DIR/keys/key-switching-keys__n-560_k-1_N-1024_kappa-1_t-16.key \
     $DATA_DIR/bin/$BINARY \
+    $DATA_DIR/dstat-with-short-intervals/dstat \
+    $DATA_DIR/dstat-with-short-intervals/measure.sh \
     . || { echo >&2 "Error while copying input file(s)!"; exit 2; }
 
-#~ cp -r \
-    #~ folders
-    #~ . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
+cp -r \
+    $DATA_DIR/dstat-with-short-intervals/plugins \
+    . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
 # run main command(s)
-#TODO dstat --cpu-use -t > cpu-use_XEON.log &
-./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
+./measure.sh $BINARY
+#~ ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
 # copy output files (if any)
-# cp output $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Result file(s) copying failed! Try to copy them manually."; exit 6; }
+cp \
+    cpu-stats.log \
+    $DATA_DIR/cpu-stats_samson.log || { echo >&2 "Error while copying result file(s)!"; exit 6; }
+    #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }
