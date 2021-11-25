@@ -63,7 +63,7 @@ cp -r \
     . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
 # run main command(s)
-./measure.sh $BINARY
+./measure.sh ./$BINARY
 #~ ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
 # copy output files (if any)
