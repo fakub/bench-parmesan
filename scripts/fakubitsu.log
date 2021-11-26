@@ -1,0 +1,125 @@
+
+ +  [09:02.015] 🧀    Parmesan Benchmark    🧀    ...
+
+
+Parallel: 4 threads
+
+ +  [09:02.016] Setup/load keys ...
+ —  [09:07.363] Setup/load keys (in 5.347 s)
+
+
+Inputs:
+
+a   =   -544883923
+b   =   1125934951
+c   =   -596131051
+d   =    994753957
+
+a4  =           -5
+b4  =           -4
+a8  =         -201
+b8  =         -157
+c8  =           91
+d8  =           61
+a16 =        25940
+b16 =        -5213
+a32 =   1538878129
+b32 =  -1985131101
+
+ +  [09:07.367] Programmable bootstrapping 10x ...
+ —  [09:08.340] Programmable bootstrapping 10x (in 973.149 ms)
+
+ +  [09:08.340] 1st level addition: a + b   (no BS) ...
+ —  [09:09.178] 1st level addition: a + b   (no BS) (in 837.793 ms)
+
+ +  [09:09.178] 1st level subtraction: c - d   (no BS) ...
+ —  [09:10.005] 1st level subtraction: c - d   (no BS) (in 827.301 ms)
+
+ +  [09:10.005] 2nd level addition: (a+b) + (c-d)   (with BS) ...
+ —  [09:10.905] 2nd level addition: (a+b) + (c-d)   (with BS) (in 899.683 ms)
+
+ +  [09:10.905] 1st level signum: sgn(a)   (no BS) ...
+ —  [09:12.116] 1st level signum: sgn(a)   (no BS) (in 1.211 s)
+
+ +  [09:12.116] 2nd level signum: sgn((a+b) + (c-d))   (with BS) ...
+ —  [09:13.478] 2nd level signum: sgn((a+b) + (c-d))   (with BS) (in 1.362 s)
+
+ +  [09:13.478] 1st level maximum: max(a, b)   (no BS) ...
+ —  [09:17.957] 1st level maximum: max(a, b)   (no BS) (in 4.479 s)
+
+ +  [09:17.957] 1st level maximum: max(c, d)   (no BS) ...
+ —  [09:22.202] 1st level maximum: max(c, d)   (no BS) (in 4.246 s)
+
+ +  [09:22.202] 2nd level maximum: max(m_ab, m_cd)   (with BS) ...
+ —  [09:26.814] 2nd level maximum: max(m_ab, m_cd)   (with BS) (in 4.612 s)
+
+ +  [09:26.814] 4-word multiplication: a4 × b4 ...
+ —  [09:28.807] 4-word multiplication: a4 × b4 (in 1.993 s)
+
+ +  [09:28.807] 8-word multiplication: a8 × b8 ...
+ —  [09:37.066] 8-word multiplication: a8 × b8 (in 8.259 s)
+
+ +  [09:37.066] 4-word squaring: a4 ^ 2 ...
+ —  [09:38.951] 4-word squaring: a4 ^ 2 (in 1.885 s)
+
+ +  [09:38.951] 8-word squaring: a8 ^ 2 ...
+ —  [09:45.884] 8-word squaring: a8 ^ 2 (in 6.933 s)
+
+ +  [09:45.884] scalar multiplication: -161/0b10100001/ × a16   (with BS) ...
+ —  [09:48.760] scalar multiplication: -161/0b10100001/ × a16   (with BS) (in 2.876 s)
+
+ +  [09:48.760] scalar multiplication: 239/0b11101111/ × a16   (with BS) ...
+ —  [09:51.474] scalar multiplication: 239/0b11101111/ × a16   (with BS) (in 2.714 s)
+
+ +  [09:51.475] scalar multiplication: 231/0b11100111/ × a16   (with BS) ...
+ —  [09:55.369] scalar multiplication: 231/0b11100111/ × a16   (with BS) (in 3.894 s)
+
+ +  [09:55.369] scalar multiplication: 170/0b10101010/ × a16   (with BS) ...
+ —  [09:59.154] scalar multiplication: 170/0b10101010/ × a16   (with BS) (in 3.786 s)
+
+ +  [09:59.154] scalar multiplication: 219/0b11011011/ × a16   (with BS) ...
+ —  [10:63.065] scalar multiplication: 219/0b11011011/ × a16   (with BS) (in 3.910 s)
+
+ +  [10:63.065] neural network evaluation: NN(a8, b8, c8, d8)   (??? BS) ...
+ —  [10:71.736] neural network evaluation: NN(a8, b8, c8, d8)   (??? BS) (in 8.672 s)
+
+Results:
+
+Programmable Bootstrapping:
+id(a[0])      =            1 :: PASS (exp. 1)
+
+Addition:
+a + b         =    581051028 :: PASS (exp. 581051028)
+c - d         =  -1590885008 :: PASS (exp. -1590885008)
+(a+b) + (c-d) =  -1009833980 :: PASS (exp. -1009833980)
+
+Signum:
+sgn(a)        =           -1 :: PASS (exp. -1)
+sgn(a+b+c-d)  =           -1 :: PASS (exp. -1)
+
+Maximum:
+max{a, b}     =   1125934951 :: PASS (exp. 1125934951)
+max{c, d}     =    994753957 :: PASS (exp. 994753957)
+max{m_ab,m_cd}=   1125934951 :: PASS (exp. 1125934951)
+
+Multiplication:
+a4 × b4       =                     20 :: PASS (exp. 20)
+a8 × b8       =                  31557 :: PASS (exp. 31557)
+
+Squaring:
+a4 ^ 2        =                     25 :: PASS (exp. 25)
+a8 ^ 2        =                  40401 :: PASS (exp. 40401)
+
+Scalar Multiplication:
+   -161 × a16 =     -4176340 :: PASS (exp. -4176340)
+    239 × a16 =      6199660 :: PASS (exp. 6199660)
+    231 × a16 =      5992140 :: PASS (exp. 5992140)
+    170 × a16 =      4409800 :: PASS (exp. 4409800)
+    219 × a16 =      5680860 :: PASS (exp. 5680860)
+
+Neural Network Evaluation:
+NN(a8, b8, c8, d8) = [316, -768, 0] :: PASS (exp. [316, -768, 0])
+
+ —  [10:71.745] 🧀    Parmesan Benchmark    🧀    (in 69.730 s)
+
+
