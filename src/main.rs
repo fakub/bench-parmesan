@@ -1,4 +1,7 @@
 use std::error::Error;
+use std::fs::{self,File,OpenOptions};
+use std::path::Path;
+use std::io::prelude::*;
 use colored::Colorize;
 
 use parmesan::params;
@@ -23,7 +26,18 @@ use parmesan::arithmetics::ParmArithmetics;
 extern crate chrono;
 use chrono::Utc;
 
+const LOGFILE: &str = "./operations.log";
+
 fn main() {
+
+    // clear (if exists) & create log file
+    if Path::new(LOGFILE).exists() {
+        fs::remove_file(LOGFILE).expect("fs::remove_file failed.");
+    }
+    let mut logfile = File::create(LOGFILE).expect("File::create failed.");
+    write!(logfile, "---\n---\n");
+
+    // run benchmark
     println!();
     parmesan::simple_duration!(
         ["🧀    {} {}    🧀   ", String::from("Parmesan").bold().yellow(), String::from("Benchmark").bold()],
@@ -31,6 +45,7 @@ fn main() {
             let _x = bench();
         ]
     );
+
     println!();
 }
 
@@ -50,7 +65,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // parameters
     let par = &params::PARM90__PI_5__D_20__F;   //     PARM90__PI_5__D_20__F      PARMXX__TRIVIAL
 
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Setup keys"],
         ["Setup/load keys"],
         [
             // Userovo Scope & keys
@@ -158,7 +174,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "pbs")]
     {
     // first level addition/subtraction:   a + b   ,   c - d
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["PBS {}x", PBS_N],
         ["Programmable bootstrapping {}x", PBS_N],
         [
             for _ in 0..PBS_N {
@@ -181,13 +198,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "add")]
     {
     // first level addition/subtraction:   a + b   ,   c - d
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Add (no BS, 1st lvl)"],
         ["1st level addition: a + b   (no BS)"],
         [
             c_add_a_b = ParmArithmetics::add(&pc, &_ca, &_cb);
         ]
     );
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Sub (no BS, 1st lvl)"],
         ["1st level subtraction: c - d   (no BS)"],
         [
             c_sub_c_d = ParmArithmetics::sub(&pc, &_cc, &_cd);
@@ -196,7 +215,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     // second level addition:   (a+b) + (c-d)
     //TODO bootstrap 1 !!
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Add (w BS, 2nd lvl)"],
         ["2nd level addition: (a+b) + (c-d)   (with BS)"],
         [
             c_add_ab_cnd = ParmArithmetics::add(&pc, &c_add_a_b, &c_sub_c_d);
@@ -217,7 +237,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "sgn")]
     {
     // first level signum
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Sgn (no BS, 1st lvl)"],
         ["1st level signum: sgn(a)   (no BS)"],
         [
             c_sgn_a = ParmArithmetics::sgn(&pc, &_ca);
@@ -225,7 +246,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
 
     // second level signum
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Sgn (w BS, 2nd lvl)"],
         ["2nd level signum: sgn((a+b) + (c-d))   (with BS)"],
         [
             c_sgn_abcnd = ParmArithmetics::sgn(&pc, &c_add_ab_cnd);
@@ -246,13 +268,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "max")]
     {
     // first level maximum
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Max (no BS, 1st lvl)"],
         ["1st level maximum: max(a, b)   (no BS)"],
         [
             c_max_a_b = ParmArithmetics::max(&pc, &_ca, &_cb);
         ]
     );
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Max (no BS, 1st lvl)"],
         ["1st level maximum: max(c, d)   (no BS)"],
         [
             c_max_c_d = ParmArithmetics::max(&pc, &_cc, &_cd);
@@ -260,7 +284,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
 
     // second level maximum
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Max (w BS, 2nd lvl)"],
         ["2nd level maximum: max(m_ab, m_cd)   (with BS)"],
         [
             c_max_mab_mcd = ParmArithmetics::max(&pc, &c_max_a_b, &c_max_c_d);
@@ -283,7 +308,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "mul_light")]
     {
     // 4-word multiplication -> 8-word
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Mul (4-word)"],
         ["4-word multiplication: a4 × b4"],
         [
             c_mul4_a_b = ParmArithmetics::mul(&pc, &_ca4, &_cb4);
@@ -291,7 +317,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
 
     // 8-word multiplication -> 16-word
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Mul (8-word)"],
         ["8-word multiplication: a8 × b8"],
         [
             c_mul8_a_b = ParmArithmetics::mul(&pc, &_ca8, &_cb8);
@@ -301,7 +328,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "mul")]
     {
     // 16-word multiplication -> 33-word
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Mul (16-word)"],
         ["16-word multiplication: a16 × b16"],
         [
             c_mul16_a_b = ParmArithmetics::mul(&pc, &_ca16, &_cb16);
@@ -309,7 +337,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
 
     // 32-word multiplication -> 66-word (if there happen to be zeros at the leading positions after decryption, it PASSes)
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Mul (32-word)"],
         ["32-word multiplication: a32 × b32"],
         [
             c_mul32_a_b = ParmArithmetics::mul(&pc, &_ca32, &_cb32);
@@ -332,7 +361,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "squ_light")]
     {
     // 4-word squaring -> 9-word (?)
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Squ (4-word)"],
         ["4-word squaring: a4 ^ 2"],
         [
             c_squ_a4 = ParmArithmetics::squ(&pc, &_ca4);
@@ -340,7 +370,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
 
     // 8-word squaring -> 18-word (?)
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Squ (8-word)"],
         ["8-word squaring: a8 ^ 2"],
         [
             c_squ_a8 = ParmArithmetics::squ(&pc, &_ca8);
@@ -351,7 +382,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "squ")]
     {
     // 16-word squaring -> 35-word (?)
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Squ (16-word)"],
         ["16-word squaring: a16 ^ 2"],
         [
             c_squ_a16 = ParmArithmetics::squ(&pc, &_ca16);
@@ -359,7 +391,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
 
     // 32-word squaring -> 68-word (?)
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Squ (32-word)"],
         ["32-word squaring: a32 ^ 2"],
         [
             c_squ_a32 = ParmArithmetics::squ(&pc, &_ca32);
@@ -377,7 +410,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // scalar multiplication of 16-word
     for ki in _k {
-        parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["Sc. Mul (w BS, {})", ki],
             ["scalar multiplication: {}/0b{:b}/ × a16   (with BS)", ki, ki.abs()],
             [
                 c_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &_ca16));
@@ -423,7 +457,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
         n_inputs: 3,
     };
 
-    parmesan::simple_duration!(
+    parmesan::bench_duration!(
+        ["NN Eval (?? BS)"],
         ["neural network evaluation: NN(a8, b8, c8, d8)   (??? BS)"],
         [
             c_nn_out = parmesan::demo_nn().eval(&pc, &c_nn_in);
@@ -431,6 +466,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     m_nn_out = parmesan::demo_nn().eval(&pc, &m_nn_in);
     }
+
+
+    // =========================================================================
+    //  Conclude Measurement in LOG file
+
+    let __utc_end = Utc::now();
+    let mut logfile = OpenOptions::new().write(true).append(true).open(LOGFILE).unwrap();
+    //TODO somehow, handle the retval
+    writeln!(logfile, "{}.{:03} \"The End\"", __utc_end.format("%S"), __utc_end.timestamp_subsec_millis());
 
 
     // =========================================================================

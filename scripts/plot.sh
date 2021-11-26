@@ -13,7 +13,7 @@ set boxwidth 0.025
 set multiplot layout 2,1
 
 set yrange [-5:110]
-set xrange [0.5:74.0]
+set xrange [7.0:76.5]
 
 set ytics 0,25,100
 
@@ -21,7 +21,7 @@ set ytics 0,25,100
 # custom xtic: https://stackoverflow.com/questions/50340829/gnuplot-using-xtic-from-data-but-plotting-only-every-10th
 
 # skip first two lines
-cpu_stats = "\"< paste cpu-stats.log fakubitsu_desired-format.log | awk '(NR>2){print;}'\""
+cpu_stats = "\"< paste cpu-stats.log operations.log | awk '(NR>2){print;}'\""
 
 # ------------------------------------------------------------------------------
 
