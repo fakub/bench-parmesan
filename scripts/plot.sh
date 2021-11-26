@@ -2,7 +2,7 @@
 
 reset
 
-set term pngcairo dashed size 4800,1100
+set term pngcairo dashed size 8000,1100
 set out 'plot.png'
 
 set colorsequence default

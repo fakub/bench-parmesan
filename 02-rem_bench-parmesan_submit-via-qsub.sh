@@ -1,22 +1,22 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=224:mem=1gb:scratch_local=1gb:cluster=samson
+#PBS -l select=1:ncpus=16:mem=1gb:scratch_local=1gb:vnode=kirke1
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
 #   samson      4x Intel Xeon Platinum 8280     cerit-pbs.cerit-sc.cz           4x56 threads (224)          cascadelake             2.70 - 4.00 GHz
 #   eltu        4x Intel Xeon Platinum 8260     elixir-pbs.elixir-czech.cz      4x48 threads (192)          cascadelake             2.40 - 3.90 GHz
 #   elwe        2x AMD EPYC 7532                elixir-pbs.elixir-czech.cz      2x64 threads (128)          znver2                  2.40 - 3.30 GHz
-#   kirke_x     2x AMD EPYC 7532                meta-pbs.metacentrum.cz         dtto
+#   kirke       2x AMD EPYC 7532                meta-pbs.metacentrum.cz         dtto
 #
 # consider: #PBS -l place=exclhost
 #
 #PBS -l walltime=00:10:00
-#PBS -N parmesan-bench_samson
+#PBS -N parmesan-bench_kirke
 #PBS -j oe
 #PBS -m ae
 #PBS -M fakubo@gmail.com
 
-# describtion from 'man qsub':
+# describtion from 'man qsub' (also see https://wiki.metacentrum.cz/wiki/About_scheduling_system):
 # -N ... declares a name for the job. The name specified may be up to and including 15 characters in length. It
 #        must consist of printable, non white space characters with the first character alphabetic.
 # -q ... defines the destination of the job (queue)
@@ -25,9 +25,41 @@
 # -m ae ...  mail is sent when the job aborts or terminates
 # job array: $ qsub -J 2-7:2 script.sh
 
+
+# ------------------------------------------------------------------------------
+#
+#   Setup Variables
+#
+
+# declare which binary is to be executed
+BINARY="bench-parmesan_PBS_znver2-AMD"
+    # for Kirke, Elwe and other AMD-based:
+    #   bench-parmesan_ALL_znver2-AMD
+    #   bench-parmesan_PBS_znver2-AMD
+    #   bench-parmesan_ADD_znver2-AMD
+    #   bench-parmesan_SGN_znver2-AMD
+    #   bench-parmesan_MAX_znver2-AMD
+    #   bench-parmesan_MUL_znver2-AMD
+    #   bench-parmesan_SCM_znver2-AMD
+    #   bench-parmesan_NN_znver2-AMD
+        # for Samson, Eltu and other Intel-based:
+        #   bench-parmesan_ALL_cascadelake-XEON
+        #   bench-parmesan_PBS_cascadelake-XEON
+        #   bench-parmesan_ADD_cascadelake-XEON
+        #   bench-parmesan_SGN_cascadelake-XEON
+        #   bench-parmesan_MAX_cascadelake-XEON
+        #   bench-parmesan_MUL_cascadelake-XEON
+        #   bench-parmesan_SCM_cascadelake-XEON
+        #   bench-parmesan_NN_cascadelake-XEON
+
+CLUSTER_NAME="kirke"   # elwe   samson   eltu
+
+# ------------------------------------------------------------------------------
+
+
 # initialize required modules (if any)
 module add fftw/fftw-3.3.8-intel-19.0.4-532p634
-#~ module add fftw/fftw-3.3.8-intel-20.0.0-au2vxr2
+# module add fftw/fftw-3.3.8-intel-20.0.0-au2vxr2   # does not compile with this one
 
 # clean the SCRATCH when job finishes (and data are successfully copied out) or is killed
 trap 'clean_scratch' TERM EXIT
@@ -35,17 +67,6 @@ trap 'clean_scratch' TERM EXIT
 # go to the right place
 test -n "$SCRATCHDIR" || { echo >&2 "Variable SCRATCHDIR is not set!"; exit 1; }
 cd $SCRATCHDIR
-
-# declare which binary is to be executed
-BINARY="bench-parmesan_PBS_cascadelake-XEON"
-#~ bench-parmesan_ALL_cascadelake-XEON
-#~ bench-parmesan_PBS_cascadelake-XEON
-#~ bench-parmesan_ADD_cascadelake-XEON
-#~ bench-parmesan_SGN_cascadelake-XEON
-#~ bench-parmesan_MAX_cascadelake-XEON
-#~ bench-parmesan_MUL_cascadelake-XEON
-#~ bench-parmesan_SCM_cascadelake-XEON
-#~ bench-parmesan_NN_cascadelake-XEON
 
 # copy files: keys, pre-compiled binary, measurement scripts
 DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
@@ -63,11 +84,12 @@ cp -r \
     . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
 # run main command(s)
+chmod a+x measure.sh
 ./measure.sh ./$BINARY
-#~ ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
+# ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
 # copy output files (if any)
 cp \
     cpu-stats.log \
-    $DATA_DIR/cpu-stats_samson.log || { echo >&2 "Error while copying result file(s)!"; exit 6; }
+    $DATA_DIR/cpu-stats_$CLUSTER_NAME.log || { echo >&2 "Error while copying result file(s)!"; exit 6; }
     #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }
