@@ -48,11 +48,11 @@ module add fftw/fftw-3.3.8-intel-19.0.4-532p634
 cd bench-parmesan
 
 # for Intel Xeon (and copy)
-export RUSTFLAGS="-C target-cpu=cascadelake"
-cargo build --release
-mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_cascadelake-XEON
-cargo build --release --no-default-features --features "pbs"
-mv target/release/bench-parmesan ../bin/bench-parmesan_PBS_cascadelake-XEON
+#~ export RUSTFLAGS="-C target-cpu=cascadelake"
+#~ cargo build --release
+#~ mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_cascadelake-XEON
+#~ cargo build --release --no-default-features --features "pbs"
+#~ mv target/release/bench-parmesan ../bin/bench-parmesan_PBS_cascadelake-XEON
 #~ cargo build --release --no-default-features --features "add"
 #~ mv target/release/bench-parmesan ../bin/bench-parmesan_ADD_cascadelake-XEON
 #~ cargo build --release --no-default-features --features "sgn"

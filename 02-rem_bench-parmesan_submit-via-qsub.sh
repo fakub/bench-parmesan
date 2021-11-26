@@ -91,5 +91,6 @@ chmod a+x measure.sh
 # copy output files (if any)
 cp \
     cpu-stats.log \
-    $DATA_DIR/cpu-stats_$CLUSTER_NAME.log || { echo >&2 "Error while copying result file(s)!"; exit 6; }
+    operations.log \
+    $DATA_DIR || { echo >&2 "Error while copying result file(s)!"; exit 6; }
     #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }
