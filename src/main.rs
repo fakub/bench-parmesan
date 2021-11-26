@@ -272,15 +272,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // =========================================================================
     //  Multiplication
 
-    #[cfg(feature = "mul")]
+    #[cfg(feature = "mul_light")]
     let c_mul4_a_b: ParmCiphertext;
-    #[cfg(feature = "mul")]
+    #[cfg(feature = "mul_light")]
     let c_mul8_a_b: ParmCiphertext;
     #[cfg(feature = "mul")]
     let c_mul16_a_b: ParmCiphertext;
     #[cfg(feature = "mul")]
     let c_mul32_a_b: ParmCiphertext;
-    #[cfg(feature = "mul")]
+    #[cfg(feature = "mul_light")]
     {
     // 4-word multiplication -> 8-word
     parmesan::simple_duration!(
@@ -297,7 +297,9 @@ fn bench() -> Result<(), Box<dyn Error>> {
             c_mul8_a_b = ParmArithmetics::mul(&pc, &_ca8, &_cb8);
         ]
     );
-
+    }
+    #[cfg(feature = "mul")]
+    {
     // 16-word multiplication -> 33-word
     parmesan::simple_duration!(
         ["16-word multiplication: a16 × b16"],
@@ -319,15 +321,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // =========================================================================
     //  Squaring
 
-    #[cfg(feature = "squ")]
+    #[cfg(feature = "squ_light")]
     let c_squ_a4: ParmCiphertext;
-    #[cfg(feature = "squ")]
+    #[cfg(feature = "squ_light")]
     let c_squ_a8: ParmCiphertext;
     #[cfg(feature = "squ")]
     let c_squ_a16: ParmCiphertext;
     #[cfg(feature = "squ")]
     let c_squ_a32: ParmCiphertext;
-    #[cfg(feature = "squ")]
+    #[cfg(feature = "squ_light")]
     {
     // 4-word squaring -> 9-word (?)
     parmesan::simple_duration!(
@@ -344,7 +346,10 @@ fn bench() -> Result<(), Box<dyn Error>> {
             c_squ_a8 = ParmArithmetics::squ(&pc, &_ca8);
         ]
     );
+    }
 
+    #[cfg(feature = "squ")]
+    {
     // 16-word squaring -> 35-word (?)
     parmesan::simple_duration!(
         ["16-word squaring: a16 ^ 2"],
@@ -509,12 +514,10 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(feature = "mul")]
+    #[cfg(feature = "mul_light")]
     {
     let mul4_a_b    = pu.decrypt(&c_mul4_a_b    )?;
     let mul8_a_b    = pu.decrypt(&c_mul8_a_b    )?;
-    let mul16_a_b   = pu.decrypt(&c_mul16_a_b   )?;
-    let mul32_a_b   = pu.decrypt(&c_mul32_a_b   )?;
     summary_text = format!("{}\n\nMultiplication:", summary_text);
     summary_text = format!("{}\na4 × b4       = {:22} :: {} (exp. {})", summary_text,
                             mul4_a_b,
@@ -526,6 +529,11 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if mul8_a_b == a8_val * b8_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a8_val * b8_val
     );
+    }
+    #[cfg(feature = "mul")]
+    {
+    let mul16_a_b   = pu.decrypt(&c_mul16_a_b   )?;
+    let mul32_a_b   = pu.decrypt(&c_mul32_a_b   )?;
     summary_text = format!("{}\na16 × b16     = {:22} :: {} (exp. {})", summary_text,
                             mul16_a_b,
                             if mul16_a_b == a16_val * b16_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -538,12 +546,10 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(feature = "squ")]
+    #[cfg(feature = "squ_light")]
     {
     let squ_a4      = pu.decrypt(&c_squ_a4      )?;
     let squ_a8      = pu.decrypt(&c_squ_a8      )?;
-    let squ_a16     = pu.decrypt(&c_squ_a16     )?;
-    let squ_a32     = pu.decrypt(&c_squ_a32     )?;
     summary_text = format!("{}\n\nSquaring:", summary_text);
     summary_text = format!("{}\na4 ^ 2        = {:22} :: {} (exp. {})", summary_text,
                             squ_a4,
@@ -555,6 +561,11 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if squ_a8 == a8_val * a8_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a8_val * a8_val
     );
+    }
+    #[cfg(feature = "squ")]
+    {
+    let squ_a16     = pu.decrypt(&c_squ_a16     )?;
+    let squ_a32     = pu.decrypt(&c_squ_a32     )?;
     summary_text = format!("{}\na16 ^ 2       = {:22} :: {} (exp. {})", summary_text,
                             squ_a16,
                             if squ_a16 == a16_val * a16_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
