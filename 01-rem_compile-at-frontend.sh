@@ -45,6 +45,8 @@ module add fftw/fftw-3.3.8-intel-19.0.4-532p634
 #
 #   Compile
 #
+rm -r bin
+mkdir bin
 cd bench-parmesan
 
 # for Intel Xeon (and copy)

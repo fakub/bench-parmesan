@@ -1,5 +1,6 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=16:mem=1gb:scratch_local=1gb:vnode=kirke1
+#PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=kirke
+#PBS -l walltime=00:10:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
@@ -8,9 +9,7 @@
 #   elwe        2x AMD EPYC 7532                elixir-pbs.elixir-czech.cz      2x64 threads (128)          znver2                  2.40 - 3.30 GHz
 #   kirke       2x AMD EPYC 7532                meta-pbs.metacentrum.cz         dtto
 #
-# consider: #PBS -l place=exclhost
-#
-#PBS -l walltime=00:10:00
+#PBS -l place=exclhost
 #PBS -N parmesan-bench_kirke
 #PBS -j oe
 #PBS -m ae
@@ -32,7 +31,7 @@
 #
 
 # declare which binary is to be executed
-BINARY="bench-parmesan_PBS_znver2-AMD"
+BINARY="bench-parmesan_ALL_znver2-AMD"
     # for Kirke, Elwe and other AMD-based:
     #   bench-parmesan_ALL_znver2-AMD
     #   bench-parmesan_PBS_znver2-AMD
@@ -88,9 +87,13 @@ chmod a+x measure.sh
 ./measure.sh ./$BINARY
 # ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
-# copy output files (if any)
+# copy output log files
+ts=$(date +"%y-%m-%d_%H-%M")
+logpath=$DATA_DIR/logs/$CLUSTER_NAME/$ts
+mkdir -p $logpath
+
 cp \
     cpu-stats.log \
     operations.log \
-    $DATA_DIR || { echo >&2 "Error while copying result file(s)!"; exit 6; }
+    $logpath || { echo >&2 "Error while copying result file(s)!"; exit 6; }
     #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }
