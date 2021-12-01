@@ -103,3 +103,5 @@ cp \
     operations.log \
     $logpath || { echo >&2 "Error while copying result file(s)!"; exit 6; }
     #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }
+
+mv $logpath/operations.log $logpath/operations-$MEASURE_METHOD.log
