@@ -53,6 +53,11 @@ BINARY="bench-parmesan_ALL_znver2-AMD"
 
 CLUSTER_NAME="kirke"   # elwe   samson   eltu
 
+MEASURE_METHOD="dstat"   # dstat   top
+
+MEASURE_SCRIPT="measure-$MEASURE_METHOD.sh"
+CPU_STATS_LOG="raw-cpu-stats-$MEASURE_METHOD.log"
+
 # ------------------------------------------------------------------------------
 
 
@@ -75,7 +80,8 @@ cp \
     $DATA_DIR/keys/key-switching-keys__n-560_k-1_N-1024_kappa-1_t-16.key \
     $DATA_DIR/bin/$BINARY \
     $DATA_DIR/dstat-with-short-intervals/dstat \
-    $DATA_DIR/dstat-with-short-intervals/measure.sh \
+    $DATA_DIR/dstat-with-short-intervals/measure-dstat.sh \
+    $DATA_DIR/dstat-with-short-intervals/measure-top.sh \
     . || { echo >&2 "Error while copying input file(s)!"; exit 2; }
 
 cp -r \
@@ -83,8 +89,8 @@ cp -r \
     . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
 # run main command(s)
-chmod a+x measure.sh
-./measure.sh ./$BINARY
+chmod a+x $MEASURE_SCRIPT
+./$MEASURE_SCRIPT ./$BINARY
 # ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
 # copy output log files
@@ -93,7 +99,7 @@ logpath=$DATA_DIR/logs/$CLUSTER_NAME/$ts
 mkdir -p $logpath
 
 cp \
-    cpu-stats.log \
+    $CPU_STATS_LOG \
     operations.log \
     $logpath || { echo >&2 "Error while copying result file(s)!"; exit 6; }
     #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }
