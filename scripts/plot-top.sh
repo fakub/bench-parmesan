@@ -33,15 +33,15 @@ set bmargin at screen 0.75
 # w boxes
 
 plot \
-    'cpu-load-top.log' u 1:(($2+$3+$4+$5)/100) w boxes notitle, \
-                    '' u 1:(($2+$3+$4)/100) w boxes notitle, \
-                    '' u 1:(($2+$3)/100) w boxes notitle, \
-                    '' u 1:(($2)/100) w boxes notitle, \
-                    '' u 1:(-100):xtic("") notitle, \
-    'operations.log'   u 1:(-100.0):x2tic(2) notitle
+    'cpu-load-top.log'   u 1:(($2+$3+$4+$5)/100) w boxes notitle, \
+                    ''   u 1:(($2+$3+$4)/100) w boxes notitle, \
+                    ''   u 1:(($2+$3)/100) w boxes notitle, \
+                    ''   u 1:(($2)/100) w boxes notitle, \
+                    ''   u 1:(-100):xtic("") notitle, \
+    'operations-top.log' u 1:(-100.0):x2tic(2) notitle
     # hack: -100.0 puts the value far away, how to make it invisible?
 
 #~ plot \
     #~ 'cpu-load-top.log' u 2:($11/4) w boxes t 'CPU load (top)', \
     #~ 100 w l dt 2 lw 1 lt -1 t '', \
-    #~ 'operations.log' u 1:(-100.0):x2tic(2) notitle
+    #~ 'operations-top.log' u 1:(-100.0):x2tic(2) notitle

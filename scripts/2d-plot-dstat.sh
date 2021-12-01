@@ -3,7 +3,7 @@
 reset
 
 set term pngcairo dashed size 2500,1100
-set out '2d-plot.png'
+set out '2d-plot-dstat.png'
 
 unset key
 

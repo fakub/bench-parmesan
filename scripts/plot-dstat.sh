@@ -23,7 +23,7 @@ set x2tics rotate by 45 left
 # custom xtic: https://stackoverflow.com/questions/50340829/gnuplot-using-xtic-from-data-but-plotting-only-every-10th
 
 # skip first two lines
-cpu_stats = "\"< paste raw-cpu-stats-dstat.log operations.log | awk '(NR>2){print;}'\""
+cpu_stats = "\"< paste raw-cpu-stats-dstat.log operations-dstat.log | awk '(NR>2){print;}'\""
 
 set grid x2tics ytics dt 3 lw 1 lt -1
 
