@@ -21,6 +21,7 @@ if File.exists? LOG_DSTAT
     # skip first two lines
     File.readlines(LOG_DSTAT).drop(2).each do |ls|
         # load as int/float
+        #FIXME this loads minutes as CPU load (used in 2D only)
         ary << ls.gsub(":", " ").gsub("|", " ").split.map{|n|n.include?(".") ? n.to_f : n.to_i}
     end
 

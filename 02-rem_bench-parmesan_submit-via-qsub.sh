@@ -1,5 +1,12 @@
 #!/bin/bash
-#PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=kirke
+#
+# with hyperthreading (only possible with place=exclhost; ncpus means CPU cores, this makes 128 threads, however, it is slower):
+# #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=kirke
+# #PBS -l place=exclhost
+#
+# no hyperthreading:
+#PBS -l select=1:ncpus=48:mem=1gb:scratch_local=1gb:cluster=kirke
+#
 #PBS -l walltime=00:10:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
@@ -9,7 +16,6 @@
 #   elwe        2x AMD EPYC 7532                elixir-pbs.elixir-czech.cz      2x64 threads (128)          znver2                  2.40 - 3.30 GHz
 #   kirke       2x AMD EPYC 7532                meta-pbs.metacentrum.cz         dtto
 #
-#PBS -l place=exclhost
 #PBS -N parmesan-bench_kirke
 #PBS -j oe
 #PBS -m ae
