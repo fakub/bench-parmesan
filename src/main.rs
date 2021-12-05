@@ -35,7 +35,7 @@ fn main() {
         fs::remove_file(LOGFILE).expect("fs::remove_file failed.");
     }
     let mut logfile = File::create(LOGFILE).expect("File::create failed.");
-    write!(logfile, "---\n---\n");
+    // not needed any more: write!(logfile, "---\n---\n");
 
     // run benchmark
     println!();

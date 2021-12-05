@@ -1,15 +1,16 @@
 #!/usr/bin/env ruby
 
-NCPUS           = 4
+NCPUS               = 4
 
-LOG_DSTAT       = "raw-cpu-stats-dstat.log"
-LOG_TOP         = "raw-cpu-stats-top.log"
+LOG_DSTAT           = "raw-cpu-stats-dstat.log"
+LOG_TOP             = "raw-cpu-stats-top.log"
 
-CPU_LOAD_DSTAT  = "cpu-load-dstat.log"
-CPU_FREQ_DSTAT  = "cpu-freq-dstat.log"
-CPU_SYST_DSTAT  = "cpu-systime-dstat.log"
+CPU_LOAD_ORD_DSTAT  = "cpu-load-ord-dstat.log"
+CPU_LOAD_MAP_DSTAT  = "cpu-load-map-dstat.log"
+CPU_FREQ_MAP_DSTAT  = "cpu-freq-map-dstat.log"
+CPU_SYST_DSTAT      = "cpu-systime-dstat.log"
 
-CPU_LOAD_TOP    = "cpu-load-top.log"
+CPU_LOAD_TOP        = "cpu-load-top.log"
 
 
 # ==============================================================================
@@ -20,29 +21,43 @@ if File.exists? LOG_DSTAT
 
     # skip first two lines
     File.readlines(LOG_DSTAT).drop(2).each do |ls|
-        # load as int/float
-        #FIXME this loads minutes as CPU load (used in 2D only)
-        ary << ls.gsub(":", " ").gsub("|", " ").split.map{|n|n.include?(".") ? n.to_f : n.to_i}
+        # load as int/float-from-mm:ss.sss
+        ary << ls.gsub("|", " ").split.map{|n|n.include?(".") ? \
+            n.gsub(":", " ").split.map{|t|t.to_f}.zip([60, 1]).map{|p|p.reduce(:*)}.reduce(:+) : \
+            n.to_i}
     end
 
     # write out: load, time, freq
-    File.open(CPU_LOAD_DSTAT, 'w') do |f_load|
-    File.open(CPU_SYST_DSTAT, 'w') do |f_syst|
-    File.open(CPU_FREQ_DSTAT, 'w') do |f_freq|
+    File.open(CPU_LOAD_ORD_DSTAT, 'w') do |f_load_ord|
+    File.open(CPU_LOAD_MAP_DSTAT, 'w') do |f_load_map|
+    File.open(CPU_FREQ_MAP_DSTAT, 'w') do |f_freq_map|
+    File.open(CPU_SYST_DSTAT,     'w') do |f_syst|
+        # write load & freq maps, systime
         is_load = true
-        ary.transpose.each do |l|
+        ts_index = 0
+        ary.transpose.each.with_index do |l,i|
             is_load = false if l.first.is_a? Float
+            ts_index = i    if l.first.is_a? Float
             la = l.map do |n|
                 n.is_a?(Integer) ? sprintf(" %3d", n) : sprintf(" %7.3f", n)
             end
             if l.first.is_a? Float
                 f_syst.write la.join + "\n"
             elsif is_load
-                f_load.write la.join + "\n"
+                f_load_map.write la.join + "\n"
             else
-                f_freq.write la.join + "\n"
+                f_freq_map.write la.join + "\n"
             end
         end
+
+        # write ordered load (for bar graph)
+        ary.each do |l|
+            la = [sprintf(" %8.3f", l[ts_index])]
+            la.append *l[0..ts_index-1].sort.reverse.map{|n| sprintf(" %3d", n) }
+            #~ puts la.join + "\n"
+            f_load_ord.write la.join + "\n"
+        end
+    end
     end
     end
     end

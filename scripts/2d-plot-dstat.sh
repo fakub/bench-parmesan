@@ -19,7 +19,7 @@ set xlabel 'Time [s]'
 set tmargin at screen 0.08
 set bmargin at screen 0.53
 
-plot 'cpu-load-dstat.log' matrix with image notitle   # every ::3::5
+plot 'cpu-load-map-dstat.log' matrix with image notitle   # every ::3::5
 
 # ------------------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ unset xlabel
 set tmargin at screen 0.53
 set bmargin at screen 0.98
 
-plot 'cpu-freq-dstat.log' matrix with image notitle   # every ::3::5
+plot 'cpu-freq-map-dstat.log' matrix with image notitle   # every ::3::5
 
 # ------------------------------------------------------------------------------
 
