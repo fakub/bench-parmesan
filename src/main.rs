@@ -164,7 +164,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "pbs")]
     {
     // first level addition/subtraction:   a + b   ,   c - d
-    simple_duration!(
+    measure_duration!(
         ["PBS {}x", PBS_N],
         //~ ["Programmable bootstrapping {}x", PBS_N],
         [
