@@ -164,13 +164,18 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "pbs")]
     {
     // first level addition/subtraction:   a + b   ,   c - d
-    measure_duration!(
+    simple_duration!(
         ["PBS {}x", PBS_N],
-        //~ ["Programmable bootstrapping {}x", PBS_N],
         [
-            for _ in 0..PBS_N {
-                _c_pbs_id_a = ParmCiphertext::single(pbs::id__pi_5(&pc.pub_keys, &_ca[0])?);
-            }
+        measure_duration!(
+            ["Pbs {}x", PBS_N],
+            //~ ["Programmable bootstrapping {}x", PBS_N],
+            [
+                for _ in 0..PBS_N {
+                    _c_pbs_id_a = ParmCiphertext::single(pbs::id__pi_5(&pc.pub_keys, &_ca[0])?);
+                }
+            ]
+        );
         ]
     );
     }
