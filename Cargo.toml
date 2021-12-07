@@ -6,7 +6,7 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-parmesan = { path = "../parmesan" }    #   meaure   sequential
+parmesan = { path = "../parmesan", features = ["measure"] }    #   features = [""]   measure
 colored = "2.0.0"
 rayon = "^1.5.1"
 chrono = "^0.4.0"
@@ -22,4 +22,6 @@ mul_light = []
 squ_light = []
 scm = []
 nn  = []
-default   = ["pbs", "add", "sgn", "max", "mul", "squ", "scm", "nn"]
+all = ["pbs", "add", "sgn", "max", "mul", "squ", "scm", "nn"]
+default   = ["pbs", "add", "sgn", "max", "mul_light", "squ_light", "scm"]
+log_ops = ["parmesan/log_ops"]
