@@ -14,7 +14,7 @@ set style fill solid noborder
 set boxwidth 0.08
 
 set yrange [-0.2:4.5]                  # [-0.2:4.5]
-set xrange [2339:2435]
+set xrange [1342:1563]
 
 set ytics 0,1,32
 # set xtics 0,1,500 nomirror

@@ -7,7 +7,7 @@
 # no hyperthreading:
 #PBS -l select=1:ncpus=48:mem=1gb:scratch_local=1gb:cluster=kirke
 #
-#PBS -l walltime=00:10:00
+#PBS -l walltime=00:03:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
