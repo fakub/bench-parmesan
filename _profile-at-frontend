@@ -19,3 +19,8 @@ echo "    $ export PBS_SERVER=meta-pbs.metacentrum.cz       # Kirke"
 echo -e "(!) Consider running   $ kinit   to generate Kerberos tickets.\n"
 
 . "$HOME/.cargo/env"
+
+# colors in terminal
+export LS_OPTIONS='--color=auto'
+eval "`dircolors`"
+alias ls='ls $LS_OPTIONS'
