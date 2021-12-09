@@ -37,7 +37,7 @@
 #
 
 # declare which binary is to be executed
-BINARY="bench-parmesan_ALL_znver2-AMD"
+BINARY="bench-parmesan_ALL_LOG_znver2-AMD"
     # for Kirke, Elwe and other AMD-based:
     #   bench-parmesan_ALL_znver2-AMD
     #   bench-parmesan_PBS_znver2-AMD

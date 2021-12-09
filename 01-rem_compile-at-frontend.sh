@@ -51,6 +51,7 @@ cd bench-parmesan
 
 # for Intel Xeon (and copy)
 #~ export RUSTFLAGS="-C target-cpu=cascadelake"
+
 #~ cargo build --release
 #~ mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_cascadelake-XEON
 #~ cargo build --release --no-default-features --features "pbs"
@@ -72,10 +73,13 @@ cd bench-parmesan
 
 # for AMD EPYC (and copy)
 export RUSTFLAGS="-C target-cpu=znver2"
+
+cargo build --release --no-default-features --features "all"
+mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_BEN_znver2-AMD
 cargo build --release --no-default-features --features "all log_ops"
-mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_znver2-AMD
-cargo build --release --no-default-features --features "pbs"
-mv target/release/bench-parmesan ../bin/bench-parmesan_PBS_znver2-AMD
+mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_LOG_znver2-AMD
+#~ cargo build --release --no-default-features --features "pbs"
+#~ mv target/release/bench-parmesan ../bin/bench-parmesan_PBS_znver2-AMD
 #~ cargo build --release --no-default-features --features "add"
 #~ mv target/release/bench-parmesan ../bin/bench-parmesan_ADD_znver2-AMD
 #~ cargo build --release --no-default-features --features "sgn"
