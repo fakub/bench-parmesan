@@ -72,7 +72,7 @@ cd bench-parmesan
 
 # for AMD EPYC (and copy)
 export RUSTFLAGS="-C target-cpu=znver2"
-cargo build --release --no-default-features --features "all"
+cargo build --release --no-default-features --features "all log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_znver2-AMD
 cargo build --release --no-default-features --features "pbs"
 mv target/release/bench-parmesan ../bin/bench-parmesan_PBS_znver2-AMD
