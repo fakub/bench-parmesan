@@ -1,13 +1,13 @@
 #!/bin/bash
 #
 # with hyperthreading (only possible with place=exclhost; ncpus means CPU cores, this makes 128 threads, however, it is slower):
-# #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=kirke
+# #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=halmir
 # #PBS -l place=exclhost
 #
 # no hyperthreading:
-#PBS -l select=1:ncpus=48:mem=1gb:scratch_local=1gb:cluster=kirke
+#PBS -l select=1:ncpus=64:mem=1gb:scratch_local=1gb:cluster=halmir
 #
-#PBS -l walltime=00:03:00
+#PBS -l walltime=00:10:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
@@ -18,7 +18,7 @@
 #   TODO        they seem to have the same number of processors, which is..?
 #   halmir      1x AMD EPYC 7543                meta-pbs.metacentrum.cz         64 threads                  znver2                  2.80 - 3.70 GHz
 #
-#PBS -N parmesan-bench_kirke
+#PBS -N parmesan-bench_halmir
 #PBS -j oe
 #PBS -m ae
 #PBS -M fakubo@gmail.com
@@ -40,8 +40,8 @@
 
 # declare which binary is to be executed
 BINARY="bench-parmesan_ALL_LOG_znver2-AMD"
-    # for Kirke, Elwe and other AMD-based:
-    #   bench-parmesan_ALL_znver2-AMD
+    # for Halmir, Kirke, Elwe and other AMD-based:
+    #   bench-parmesan_ALL_BEN_znver2-AMD
     #   bench-parmesan_PBS_znver2-AMD
     #   bench-parmesan_ADD_znver2-AMD
     #   bench-parmesan_SGN_znver2-AMD
@@ -50,7 +50,7 @@ BINARY="bench-parmesan_ALL_LOG_znver2-AMD"
     #   bench-parmesan_SCM_znver2-AMD
     #   bench-parmesan_NN_znver2-AMD
         # for Samson, Eltu and other Intel-based:
-        #   bench-parmesan_ALL_cascadelake-XEON
+        #   bench-parmesan_ALL_BEN_cascadelake-XEON
         #   bench-parmesan_PBS_cascadelake-XEON
         #   bench-parmesan_ADD_cascadelake-XEON
         #   bench-parmesan_SGN_cascadelake-XEON
@@ -59,7 +59,7 @@ BINARY="bench-parmesan_ALL_LOG_znver2-AMD"
         #   bench-parmesan_SCM_cascadelake-XEON
         #   bench-parmesan_NN_cascadelake-XEON
 
-CLUSTER_NAME="kirke"   # elwe   samson   eltu
+CLUSTER_NAME="halmir"   # elwe   samson   eltu   halmir
 
 MEASURE_METHOD="dstat"   # dstat   top
 
@@ -82,10 +82,14 @@ cd $SCRATCHDIR
 
 # copy files: keys, pre-compiled binary, measurement scripts
 DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
+rm -rf keys
+mkdir -p keys
 cp \
-    $DATA_DIR/keys/secret-key__n-560.key \
-    $DATA_DIR/keys/bootstrapping-keys__n-560_k-1_N-1024_gamma-10_l-2.key \
-    $DATA_DIR/keys/key-switching-keys__n-560_k-1_N-1024_kappa-1_t-16.key \
+    $DATA_DIR/keys/SK__n-474_N-1024_gamma-19_l-1_kappa-3_t-5.key \
+    $DATA_DIR/keys/BK__n-474_N-1024_gamma-19_l-1_kappa-3_t-5.key \
+    $DATA_DIR/keys/KSK__n-474_N-1024_gamma-19_l-1_kappa-3_t-5.key \
+    keys/ || { echo >&2 "Error while copying input file(s)!"; exit 2; }
+cp \
     $DATA_DIR/bin/$BINARY \
     $DATA_DIR/dstat-with-short-intervals/dstat \
     $DATA_DIR/dstat-with-short-intervals/measure-dstat.sh \
