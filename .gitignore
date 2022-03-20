@@ -1,7 +1,7 @@
 /target
+/keys
 /logs
 Cargo.lock
-*.key
 *.log
 *.png
 

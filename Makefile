@@ -1,5 +1,5 @@
 # run with default settings in Cargo.toml
-run:
+default:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release
 
 # bench only selected feature

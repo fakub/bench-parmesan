@@ -15,6 +15,8 @@
 #   eltu        4x Intel Xeon Platinum 8260     elixir-pbs.elixir-czech.cz      4x48 threads (192)          cascadelake             2.40 - 3.90 GHz
 #   elwe        2x AMD EPYC 7532                elixir-pbs.elixir-czech.cz      2x64 threads (128)          znver2                  2.40 - 3.30 GHz
 #   kirke       2x AMD EPYC 7532                meta-pbs.metacentrum.cz         dtto
+#   TODO        they seem to have the same number of processors, which is..?
+#   halmir      1x AMD EPYC 7543                meta-pbs.metacentrum.cz         64 threads                  znver2                  2.80 - 3.70 GHz
 #
 #PBS -N parmesan-bench_kirke
 #PBS -j oe
