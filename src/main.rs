@@ -194,29 +194,23 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // first level addition/subtraction:   a + b   ,   c - d
     simple_duration!(
-        ["Add (no BS, 1st lvl)"],
-        //~ ["1st level addition: a + b   (no BS)"],
+        ["Add (1st lvl)"],
         [
             c_add_a_b = ParmArithmetics::add(&pc, &_ca, &_cb);
         ]
     );
     simple_duration!(
-        ["Sub (no BS, 1st lvl)"],
-        //~ ["1st level subtraction: c - d   (no BS)"],
+        ["Sub (1st lvl)"],
         [
             c_sub_c_d = ParmArithmetics::sub(&pc, &_cc, &_cd);
         ]
     );
 
     // second level addition:   (a+b) + (c-d)
-    //TODO bootstrap 1 !!
     simple_duration!(
-        ["Add (w BS, 2nd lvl)"],
-        //~ ["2nd level addition: (a+b) + (c-d)   (with BS)"],
+        ["Add (2nd lvl, no refresh)"],
         [
-            c_add_ab_cnd = ParmArithmetics::add(&pc, &c_add_a_b, &c_sub_c_d);
-            //TODO bootstrap 2 !!
-            // idea: have add do bootstrap implicitly, add_dirty without bootstrap
+            c_add_ab_cnd = ParmArithmetics::add_noisy(&pc, &c_add_a_b, &c_sub_c_d);
         ]
     );
     }
