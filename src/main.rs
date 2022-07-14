@@ -53,7 +53,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     println!("\n\n{}\n", String::from("Sequential").bold().yellow());
 
     // parameters
-    let par = &params::PARM80__PI_5__D_20;   //  80    112    128
+    let par = &params::PARM80__PI_5__D_22;   //  80    112    128
 
     simple_duration!(
         ["Setup keys"],
@@ -246,6 +246,25 @@ fn bench() -> Result<(), Box<dyn Error>> {
         //~ ["2nd level signum: sgn((a+b) + (c-d))   (with BS)"],
         [
             c_sgn_abcnd = ParmArithmetics::sgn(&pc, &c_add_ab_cnd);
+        ]
+    );
+    }
+
+
+    // =========================================================================
+    //  Rounding
+
+    #[cfg(feature = "round")]
+    let c_round_a: ParmCiphertext;
+    #[cfg(feature = "round")]
+    const ROUND_IDX: usize = 6;
+    #[cfg(feature = "round")]
+    {
+    // first level rounding
+    simple_duration!(
+        ["Round"],
+        [
+            c_round_a = ParmArithmetics::round_at(&pc, &_ca, ROUND_IDX);
         ]
     );
     }
@@ -518,6 +537,19 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             sgn_abcnd,
                             if sgn_abcnd == (a_val + b_val + c_val - d_val).signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             (a_val + b_val + c_val - d_val).signum()
+    );
+    }
+
+    #[cfg(feature = "round")]
+    {
+    let round_a       = pu.decrypt(&c_round_a       )?;
+    // complex rounding of f64 in Rust:        sgn * (        abs          divide                     round                       )
+    let round_a_val   = if a_val < 0 {-1} else {1} * (((a_val.abs() as f64 / (1 << ROUND_IDX) as f64).round() as u64) << ROUND_IDX) as i64;
+    summary_text = format!("{}\n\nRounding:", summary_text);
+    summary_text = format!("{}\nround(a)      = {:12} :: {} (exp. {})", summary_text,
+                            round_a,
+                            if round_a == round_a_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            round_a_val
     );
     }
 

@@ -9,6 +9,8 @@ add:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "add"
 sgn:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "sgn"
+round:
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "round"
 max:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --no-default-features --features "max"
 mul:
