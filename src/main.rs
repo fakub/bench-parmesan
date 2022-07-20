@@ -137,7 +137,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // .. and set as server key
     #[cfg(feature = "concrete")]
     set_server_key(server_key);
-    //TODO setup a constant .. Concrete bit-len .. use in mul, squ, scm
+    //TODO setup a constant .. Concrete bit-len .. use in mul, squ, scm, decr check
 
 
     // =========================================================================
@@ -634,13 +634,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let c_a_v  = _c_ca.decrypt(&client_key);
     summary_text = format!("{}\ndecr(encr(a)) = {:12} :: {} (exp. {})", summary_text,
                             c_a_v,
-                            if c_a_v as i64 == a4_val & ((1 << 4) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            a4_val & ((1 << 4) - 1)
+                            if c_a_v == a4_val as u64 & ((1 << 4) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a4_val as u64 & ((1 << 4) - 1)
     );
     }
 
     // decrypt & verify all results
-    #[cfg(feature = "pbs")]
+    #[cfg(feature = "pbs")] // -------------------------------------------------
     {
     let pbs_id_a0   = pu.decrypt(&_p_c_pbs_id_a)?;
     summary_text = format!("{}\n\nProgrammable Bootstrapping:", summary_text);
@@ -651,7 +651,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(feature = "add")]
+    #[cfg(feature = "add")] // -------------------------------------------------
     {
     let add_a_b     = pu.decrypt(&p_add_a_b     )?;
     let sub_c_d     = pu.decrypt(&p_sub_c_d     )?;
@@ -672,9 +672,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if add_ab_cnd == add_a_b + sub_c_d {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             add_a_b + sub_c_d
     );
+    #[cfg(feature = "concrete")]
+    {
+    //TODO
+    }
     }
 
-    #[cfg(feature = "sgn")]
+    #[cfg(feature = "sgn")] // -------------------------------------------------
     {
     let sgn_a       = pu.decrypt(&p_sgn_a       )?;
     let sgn_abcnd   = pu.decrypt(&p_sgn_abcnd   )?;
@@ -691,7 +695,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(feature = "round")]
+    #[cfg(feature = "round")] // -----------------------------------------------
     {
     let round_a       = pu.decrypt(&p_round_a       )?;
     // complex rounding of f64 in Rust:        sgn * (        abs          divide                     round                       )
@@ -704,7 +708,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(feature = "max")]
+    #[cfg(feature = "max")] // -------------------------------------------------
     {
     let max_a_b     = pu.decrypt(&p_max_a_b     )?;
     let max_c_d     = pu.decrypt(&p_max_c_d     )?;
@@ -727,7 +731,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(feature = "mul_light")]
+    #[cfg(feature = "mul_light")] // -------------------------------------------
     {
     let mul4_a_b    = pu.decrypt(&p_mul4_a_b    )?;
     let mul8_a_b    = pu.decrypt(&p_mul8_a_b    )?;
@@ -742,8 +746,17 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if mul8_a_b == a8_val * b8_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a8_val * b8_val
     );
+    #[cfg(feature = "concrete")]
+    {
+    let c_mul_a_b_v = c_mul_a_b.decrypt(&client_key);
+    summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
+                            c_mul_a_b_v,
+                            if c_mul_a_b_v == a_val as u64 * b_val as u64 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a_val as u64 * b_val as u64
+    );
     }
-    #[cfg(feature = "mul")]
+    }
+    #[cfg(feature = "mul")] // -------------------------------------------------
     {
     let mul16_a_b   = pu.decrypt(&p_mul16_a_b   )?;
     let mul32_a_b   = pu.decrypt(&p_mul32_a_b   )?;
@@ -759,17 +772,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(all(feature = "mul", feature = "c32"))]
-    {
-    let c_mul_a_b   = c_c_mul_a_b.decrypt(&_sek32);
-    summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
-                            c_mul_a_b,
-                            if c_mul_a_b as i64 == a_val * b_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            a_val * b_val
-    );
-    }
-
-    #[cfg(feature = "squ_light")]
+    #[cfg(feature = "squ_light")] // -------------------------------------------
     {
     let squ_a4      = pu.decrypt(&p_squ_a4      )?;
     let squ_a8      = pu.decrypt(&p_squ_a8      )?;
@@ -784,8 +787,12 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if squ_a8 == a8_val * a8_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a8_val * a8_val
     );
+    #[cfg(feature = "concrete")]
+    {
+    //TODO
     }
-    #[cfg(feature = "squ")]
+    }
+    #[cfg(feature = "squ")] // -------------------------------------------------
     {
     let squ_a16     = pu.decrypt(&p_squ_a16     )?;
     let squ_a32     = pu.decrypt(&p_squ_a32     )?;
@@ -801,7 +808,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     }
 
-    #[cfg(feature = "scm")]
+    #[cfg(feature = "scm")] // -------------------------------------------------
     {
     let mut scm16_a: Vec<i64> = Vec::new();
     for ci in p_scm16_a {
@@ -815,9 +822,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
                                 (*ki as i64) * a16_val
         );
     }
+    #[cfg(feature = "concrete")]
+    {
+    //TODO
+    }
     }
 
-    #[cfg(feature = "nn")]
+    #[cfg(feature = "nn")] // --------------------------------------------------
     {
     let mut nn_out_homo: Vec<i64> = Vec::new();
     for ci in p_nn_out {
