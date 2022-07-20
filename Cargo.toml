@@ -7,9 +7,11 @@ edition = "2018"
 
 [dependencies]
 parmesan = { path = "../parmesan" }
-colored = "2.0.0"
+colored = "^2.0.0"
 rayon = "^1.5.1"
 chrono = "^0.4.0"
+concrete = { version = "^0.2.0-beta", features = ["integers", "shortints", "serde"]}
+bincode = "^1.3.3"
 
 [features]
 pbs         = []
@@ -24,6 +26,12 @@ squ_light   = []
 scm         = []
 nn          = []
 all         = ["pbs", "add", "sgn", "round", "max", "mul", "squ", "scm", "nn"]
-default     = ["pbs", "add", "sgn", "round", "max", "mul_light", "squ_light", "scm"]
+all_light   = ["pbs", "add", "sgn", "round", "max", "mul_light", "squ_light", "scm"]
+default     = ["c4"]
 measure     = []                                # measure is needed for measure_duration! which is used instead of simple_duration! in cases where there is no measure_duration! inside the block
 log_ops     = ["measure", "parmesan/log_ops"]
+# Concrete precisions
+c4          = []
+c8          = []
+c16         = []
+c32         = []
