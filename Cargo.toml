@@ -27,10 +27,12 @@ scm         = []
 nn          = []
 all         = ["pbs", "add", "sgn", "round", "max", "mul", "squ", "scm", "nn"]
 all_light   = ["pbs", "add", "sgn", "round", "max", "mul_light", "squ_light", "scm"]
-default     = ["c4"]
+default     = []
+# Measurements
 measure     = []                                # measure is needed for measure_duration! which is used instead of simple_duration! in cases where there is no measure_duration! inside the block
 log_ops     = ["measure", "parmesan/log_ops"]
 # Concrete precisions
+concrete    = ["all_light", "c4"]
 c4          = []
 c8          = []
 c16         = []

@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs::{self,File,OpenOptions};
 use std::path::Path;
+#[cfg(feature = "concrete")]
 use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
 use colored::Colorize;
@@ -25,7 +26,9 @@ use parmesan::ParmesanCloudovo;
 use parmesan::arithmetics::ParmArithmetics;
 
 // Concrete v0.2.x
+#[cfg(feature = "concrete")]
 use concrete::*;
+#[cfg(feature = "concrete")]
 use concrete::prelude::*;
 
 // timing measurements
@@ -79,16 +82,24 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // -------------------------------------------------------------------------
     // Concrete parameters & key setup
 
-    let concrete_key_path = Path::new("./keys/concrete-keys.key");
-    simple_duration!(
-        ["Setup Concrete keys"],
-        [
-            let (_sek4,_puk4,_cfg4,_sek8,_puk8,_cfg8,_sek16,_puk16,_cfg16,_sek32,_puk32,_cfg32):
+    #[cfg(feature = "concrete")]
+    let (_sek4,_puk4,_cfg4,_sek8,_puk8,_cfg8,_sek16,_puk16,_cfg16,_sek32,_puk32,_cfg32):
                 (ClientKey,ServerKey,DynIntegerEncryptor,
                  ClientKey,ServerKey,DynIntegerEncryptor,
                  ClientKey,ServerKey,DynIntegerEncryptor,
-                 ClientKey,ServerKey,DynIntegerEncryptor) = if !concrete_key_path.is_file() {
+                 ClientKey,ServerKey,DynIntegerEncryptor);
+    #[cfg(feature = "concrete")]
+    {
+    // check consistency of features
+    #[cfg(not(any(feature = "c4", feature = "c8", feature = "c16", feature = "c32")))]
+    compile_error!("No precision selected for Concrete!");
 
+    let concrete_key_path = Path::new("./keys/concrete-keys.key");
+    // setup keys
+    simple_duration!(
+        ["Setup Concrete keys"],
+        [
+            (_sek4,_puk4,_cfg4,_sek8,_puk8,_cfg8,_sek16,_puk16,_cfg16,_sek32,_puk32,_cfg32) = if !concrete_key_path.is_file() {
                 let mut u4_builder = ConfigBuilder::all_disabled();
                 let cfg4 = u4_builder.add_integer_type(DynIntegerParameters {block_parameters: FheUint2Parameters::default().into(), num_block: 2});
                 let mut u8_builder = ConfigBuilder::all_disabled();
@@ -111,19 +122,22 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 let keys_file = File::open(concrete_key_path).map(BufReader::new)?;
                 bincode::deserialize_from(keys_file)?
             };
-
-            #[cfg(feature = "c4")]
-            set_server_key(_puk4);
-            #[cfg(feature = "c8")]
-            set_server_key(_puk8);
-            #[cfg(feature = "c16")]
-            set_server_key(_puk16);
-            #[cfg(feature = "c32")]
-            set_server_key(_puk32);
-            #[cfg(not(any(feature = "c4", feature = "c8", feature = "c16", feature = "c32", )))]
-            compile_error!("No precision selected for Concrete!");
         ]
     );
+    }
+    // choose the right one ..
+    #[cfg(feature = "c4")]
+    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    #[cfg(feature = "c8")]
+    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    #[cfg(feature = "c16")]
+    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    #[cfg(feature = "c32")]
+    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    // .. and set as server key
+    #[cfg(feature = "concrete")]
+    set_server_key(server_key);
+    //TODO setup a constant .. Concrete bit-len .. use in mul, squ, scm
 
 
     // =========================================================================
@@ -209,35 +223,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let _p_cb32 = pu.encrypt_vec(&b32)?;
 
     // Concrete encrypt values
-    #[cfg(feature = "c32")]
-    let _c_ca  = _cfg32.encrypt(a_val as u64, &_sek32);
-    #[cfg(feature = "c32")]
-    let _c_cb  = _cfg32.encrypt(b_val as u64, &_sek32);
-    #[cfg(feature = "c32")]
-    let _c_cc  = _cfg32.encrypt(c_val as u64, &_sek32);
-    #[cfg(feature = "c32")]
-    let _c_cd  = _cfg32.encrypt(d_val as u64, &_sek32);
-
-    #[cfg(feature = "c4")]
-    let _c_ca4 = _cfg4.encrypt(a4_val as u64, &_sek4);
-    #[cfg(feature = "c4")]
-    let _c_cb4 = _cfg4.encrypt(b4_val as u64, &_sek4);
-    #[cfg(feature = "c8")]
-    let _c_ca8 = _cfg8.encrypt(a8_val as u64, &_sek8);
-    #[cfg(feature = "c8")]
-    let _c_cb8 = _cfg8.encrypt(b8_val as u64, &_sek8);
-    #[cfg(feature = "c8")]
-    let _c_cc8 = _cfg8.encrypt(c8_val as u64, &_sek8);
-    #[cfg(feature = "c8")]
-    let _c_cd8 = _cfg8.encrypt(d8_val as u64, &_sek8);
-    #[cfg(feature = "c16")]
-    let _c_ca16 = _cfg16.encrypt(a16_val as u64, &_sek16);
-    #[cfg(feature = "c16")]
-    let _c_cb16 = _cfg16.encrypt(b16_val as u64, &_sek16);
-    #[cfg(feature = "c32")]
-    let _c_ca32 = _cfg32.encrypt(a32_val as u64, &_sek32);
-    #[cfg(feature = "c32")]
-    let _c_cb32 = _cfg32.encrypt(b32_val as u64, &_sek32);
+    #[cfg(feature = "concrete")]
+    let (_c_ca, _c_cb, _c_cc, _c_cd);
+    #[cfg(feature = "concrete")]
+    {
+    _c_ca = encryptor.encrypt(a_val as u64, &client_key);
+    _c_cb = encryptor.encrypt(b_val as u64, &client_key);
+    _c_cc = encryptor.encrypt(c_val as u64, &client_key);
+    _c_cd = encryptor.encrypt(d_val as u64, &client_key);
+    }
 
 
     // =========================================================================
@@ -247,7 +241,6 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let mut _p_c_pbs_id_a = ParmCiphertext::single(_p_ca[0].clone());
     #[cfg(feature = "pbs")]
     {
-    // first level addition/subtraction:   a + b   ,   c - d
     simple_duration!(
         ["PBS {}x", PBS_N],
         [
@@ -268,36 +261,57 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Addition
 
     #[cfg(feature = "add")]
-    let c_add_a_b: ParmCiphertext;
-    #[cfg(feature = "add")]
-    let c_sub_c_d: ParmCiphertext;
-    #[cfg(feature = "add")]
-    let c_add_ab_cnd: ParmCiphertext;
+    let (p_add_a_b, p_sub_c_d, p_add_ab_cnd);
+    #[cfg(all(feature = "add", feature = "concrete"))]
+    let (c_add_a_b, c_sub_c_d, c_add_ab_cnd);
     #[cfg(feature = "add")]
     {
     // first level addition/subtraction:   a + b   ,   c - d
     simple_duration!(
-        ["Add (1st lvl)"],
+        ["Parmesan::Add (1st lvl)"],
         [
-            c_add_a_b = ParmArithmetics::add(&pc, &_p_ca, &_p_cb);
+            p_add_a_b = ParmArithmetics::add(&pc, &_p_ca, &_p_cb);
         ]
     );
     simple_duration!(
-        ["Sub (1st lvl)"],
+        ["Parmesan::Sub (1st lvl)"],
         [
-            c_sub_c_d = ParmArithmetics::sub(&pc, &_p_cc, &_p_cd);
+            p_sub_c_d = ParmArithmetics::sub(&pc, &_p_cc, &_p_cd);
         ]
     );
 
     // second level addition:   (a+b) + (c-d)
     simple_duration!(
-        ["Add (2nd lvl, no refresh)"],
+        ["Parmesan::Add (2nd lvl, no refresh)"],
         [
-            c_add_ab_cnd = ParmArithmetics::add_noisy(&pc, &c_add_a_b, &c_sub_c_d);
+            p_add_ab_cnd = ParmArithmetics::add_noisy(&pc, &p_add_a_b, &p_sub_c_d);
         ]
     );
 
-    //TODO Concrete addition
+    #[cfg(feature = "concrete")]
+    {
+    // first level addition/subtraction:   a + b   ,   c - d
+    simple_duration!(
+        ["Concrete::Add (1st lvl)"],
+        [
+            c_add_a_b = _c_ca.clone() + _c_cb.clone();
+        ]
+    );
+    simple_duration!(
+        ["Concrete::Sub (1st lvl)"],
+        [
+            c_sub_c_d = _c_cc.clone() - _c_cd.clone();
+        ]
+    );
+
+    // second level addition:   (a+b) + (c-d)
+    simple_duration!(
+        ["Concrete::Add (2nd lvl, no refresh)"],
+        [
+            c_add_ab_cnd = c_add_a_b.clone() + c_sub_c_d.clone();
+        ]
+    );
+    }
     }
 
 
@@ -305,24 +319,22 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Signum
 
     #[cfg(feature = "sgn")]
-    let c_sgn_a: ParmCiphertext;
-    #[cfg(feature = "sgn")]
-    let c_sgn_abcnd: ParmCiphertext;
+    let (p_sgn_a, p_sgn_abcnd);
     #[cfg(feature = "sgn")]
     {
     // first level signum
     simple_duration!(
-        ["Sgn (no BS, 1st lvl)"],
+        ["Parmesan::Sgn (no BS, 1st lvl)"],
         [
-            c_sgn_a = ParmArithmetics::sgn(&pc, &_p_ca);
+            p_sgn_a = ParmArithmetics::sgn(&pc, &_p_ca);
         ]
     );
 
     // second level signum
     simple_duration!(
-        ["Sgn (w BS, 2nd lvl)"],
+        ["Parmesan::Sgn (w BS, 2nd lvl)"],
         [
-            c_sgn_abcnd = ParmArithmetics::sgn(&pc, &c_add_ab_cnd);
+            p_sgn_abcnd = ParmArithmetics::sgn(&pc, &p_add_ab_cnd);
         ]
     );
 
@@ -334,16 +346,16 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Rounding
 
     #[cfg(feature = "round")]
-    let c_round_a: ParmCiphertext;
+    let p_round_a: ParmCiphertext;
     #[cfg(feature = "round")]
     const ROUND_IDX: usize = 6;
     #[cfg(feature = "round")]
     {
     // first level rounding
     simple_duration!(
-        ["Round"],
+        ["Parmesan::Round"],
         [
-            c_round_a = ParmArithmetics::round_at(&pc, &_p_ca, ROUND_IDX);
+            p_round_a = ParmArithmetics::round_at(&pc, &_p_ca, ROUND_IDX);
         ]
     );
 
@@ -355,32 +367,28 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Maximum
 
     #[cfg(feature = "max")]
-    let c_max_a_b: ParmCiphertext;
-    #[cfg(feature = "max")]
-    let c_max_c_d: ParmCiphertext;
-    #[cfg(feature = "max")]
-    let c_max_mab_mcd: ParmCiphertext;
+    let (p_max_a_b, p_max_c_d, p_max_mab_mcd);
     #[cfg(feature = "max")]
     {
     // first level maximum
     simple_duration!(
-        ["Max (no BS, 1st lvl)"],
+        ["Parmesan::Max (no BS, 1st lvl)"],
         [
-            c_max_a_b = ParmArithmetics::max(&pc, &_p_ca, &_p_cb);
+            p_max_a_b = ParmArithmetics::max(&pc, &_p_ca, &_p_cb);
         ]
     );
     simple_duration!(
-        ["Max (no BS, 1st lvl)"],
+        ["Parmesan::Max (no BS, 1st lvl)"],
         [
-            c_max_c_d = ParmArithmetics::max(&pc, &_p_cc, &_p_cd);
+            p_max_c_d = ParmArithmetics::max(&pc, &_p_cc, &_p_cd);
         ]
     );
 
     // second level maximum
     simple_duration!(
-        ["Max (w BS, 2nd lvl)"],
+        ["Parmesan::Max (w BS, 2nd lvl)"],
         [
-            c_max_mab_mcd = ParmArithmetics::max(&pc, &c_max_a_b, &c_max_c_d);
+            p_max_mab_mcd = ParmArithmetics::max(&pc, &p_max_a_b, &p_max_c_d);
         ]
     );
 
@@ -392,63 +400,71 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Multiplication
 
     #[cfg(feature = "mul_light")]
-    let c_mul4_a_b: ParmCiphertext;
-    #[cfg(feature = "mul_light")]
-    let c_mul8_a_b: ParmCiphertext;
+    let (p_mul4_a_b, p_mul8_a_b);
     #[cfg(feature = "mul")]
-    let c_mul16_a_b: ParmCiphertext;
-    #[cfg(feature = "mul")]
-    let c_mul32_a_b: ParmCiphertext;
-    #[cfg(all(feature = "mul", feature = "c32"))]
-    let c_c_mul_a_b;
+    let (p_mul16_a_b, p_mul32_a_b);
+
+    #[cfg(all(feature = "mul_light", feature = "concrete"))]
+    let c_mul_a_b;
+
     #[cfg(feature = "mul_light")]
     {
     // 4-word multiplication -> 8-word
     simple_duration!(
-        ["Mul (4-word)"],
+        ["Parmesan::Mul (4-word)"],
         [
-            c_mul4_a_b = ParmArithmetics::mul(&pc, &_p_ca4, &_p_cb4);
+            p_mul4_a_b = ParmArithmetics::mul(&pc, &_p_ca4, &_p_cb4);
         ]
     );
 
     // 8-word multiplication -> 16-word
     simple_duration!(
-        ["Mul (8-word)"],
+        ["Parmesan::Mul (8-word)"],
         [
-            c_mul8_a_b = ParmArithmetics::mul(&pc, &_p_ca8, &_p_cb8);
+            p_mul8_a_b = ParmArithmetics::mul(&pc, &_p_ca8, &_p_cb8);
+        ]
+    );
+
+    #[cfg(all(feature = "concrete", any(feature = "c4", feature = "c8")))]
+    {
+    // multiplication
+    simple_duration!(
+        ["Concrete::Mul (k-word)"],
+        [
+            c_mul_a_b = _c_ca.clone() * _c_cb.clone();
         ]
     );
     }
-
-    //TODO Concrete multiplication: 4- and 8-bit
+    }
 
     #[cfg(feature = "mul")]
     {
     // 16-word multiplication -> 33-word
     simple_duration!(
-        ["Mul (16-word)"],
+        ["Parmesan::Mul (16-word)"],
         [
-            c_mul16_a_b = ParmArithmetics::mul(&pc, &_p_ca16, &_p_cb16);
+            p_mul16_a_b = ParmArithmetics::mul(&pc, &_p_ca16, &_p_cb16);
         ]
     );
 
     // 32-word multiplication -> 66-word (if there happen to be zeros at the leading positions after decryption, it PASSes)
     simple_duration!(
-        ["Mul (32-word)"],
+        ["Parmesan::Mul (32-word)"],
         [
-            c_mul32_a_b = ParmArithmetics::mul(&pc, &_p_ca32, &_p_cb32);
+            p_mul32_a_b = ParmArithmetics::mul(&pc, &_p_ca32, &_p_cb32);
+        ]
+    );
+
+    #[cfg(all(feature = "concrete", any(feature = "c16", feature = "c32")))]
+    {
+    // multiplication
+    simple_duration!(
+        ["Concrete::Mul (K-word)"],
+        [
+            c_mul_a_b = _c_ca.clone() * _c_cb.clone();
         ]
     );
     }
-    #[cfg(all(feature = "mul", feature = "c32"))]
-    {
-    // Concrete 32-word multiplication
-    simple_duration!(
-        ["Mul Concrete (32-word)"],
-        [
-            c_c_mul_a_b = _c_ca.clone() * _c_cb;
-        ]
-    );
     }
 
 
@@ -456,74 +472,106 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Squaring
 
     #[cfg(feature = "squ_light")]
-    let c_squ_a4: ParmCiphertext;
-    #[cfg(feature = "squ_light")]
-    let c_squ_a8: ParmCiphertext;
+    let (p_squ_a4, p_squ_a8);
     #[cfg(feature = "squ")]
-    let c_squ_a16: ParmCiphertext;
-    #[cfg(feature = "squ")]
-    let c_squ_a32: ParmCiphertext;
+    let (p_squ_a16, p_squ_a32);
+
+    #[cfg(all(feature = "squ_light", feature = "concrete"))]
+    let c_squ_a_b;
+
     #[cfg(feature = "squ_light")]
     {
     // 4-word squaring -> 9-word (?)
     simple_duration!(
-        ["Squ (4-word)"],
+        ["Parmesan::Squ (4-word)"],
         [
-            c_squ_a4 = ParmArithmetics::squ(&pc, &_p_ca4);
+            p_squ_a4 = ParmArithmetics::squ(&pc, &_p_ca4);
         ]
     );
 
     // 8-word squaring -> 18-word (?)
     simple_duration!(
-        ["Squ (8-word)"],
+        ["Parmesan::Squ (8-word)"],
         [
-            c_squ_a8 = ParmArithmetics::squ(&pc, &_p_ca8);
+            p_squ_a8 = ParmArithmetics::squ(&pc, &_p_ca8);
+        ]
+    );
+
+    #[cfg(all(feature = "concrete", any(feature = "c4", feature = "c8")))]
+    {
+    // squaring
+    simple_duration!(
+        ["Concrete::Squ (k-word)"],
+        [
+            c_squ_a_b = _c_ca.clone() * _c_ca.clone();
         ]
     );
     }
-
-    //TODO Concrete squaring light
+    }
 
     #[cfg(feature = "squ")]
     {
     // 16-word squaring -> 35-word (?)
     simple_duration!(
-        ["Squ (16-word)"],
+        ["Parmesan::Squ (16-word)"],
         [
-            c_squ_a16 = ParmArithmetics::squ(&pc, &_p_ca16);
+            p_squ_a16 = ParmArithmetics::squ(&pc, &_p_ca16);
         ]
     );
 
     // 32-word squaring -> 68-word (?)
     simple_duration!(
-        ["Squ (32-word)"],
+        ["Parmesan::Squ (32-word)"],
         [
-            c_squ_a32 = ParmArithmetics::squ(&pc, &_p_ca32);
+            p_squ_a32 = ParmArithmetics::squ(&pc, &_p_ca32);
+        ]
+    );
+
+    #[cfg(all(feature = "concrete", any(feature = "c16", feature = "c32")))]
+    {
+    // squaring
+    simple_duration!(
+        ["Concrete::Squ (K-word)"],
+        [
+            c_squ_a_b = _c_ca.clone() * _c_ca.clone();
         ]
     );
     }
-
-    //TODO Concrete squaring
+    }
 
 
     // =========================================================================
     //  Scalar Multiplication
 
     #[cfg(feature = "scm")]
-    let mut c_scm16_a: Vec<ParmCiphertext> = Vec::new();
+    let mut p_scm16_a: Vec<ParmCiphertext> = Vec::new();
+    #[cfg(all(feature = "add", feature = "concrete"))]
+    let mut c_scm16_a = Vec::new();
     #[cfg(feature = "scm")]
     {
     // scalar multiplication of 16-word
     for ki in _k {
         simple_duration!(
-            ["Sc. Mul (w BS, {})", ki],
+            ["Parmesan::Sc. Mul (16-word, by {})", ki],
             [
-                c_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &_p_ca16));
+                p_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &_p_ca16));
             ]
         );
     }
 
-    //TODO Concrete scalar mul
+    #[cfg(feature = "concrete")]
+    {
+    // scalar multiplication
+    for ki in _k {
+        simple_duration!(
+            ["Concrete::Sc. Mul (k-word, by {})", ki],
+            [
+                let c_scmi = ki as u64 * _c_ca.clone();
+                c_scm16_a.push(c_scmi);
+            ]
+        );
+    }
+    }
     }
 
 
@@ -531,7 +579,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  NN Evaluation
 
     #[cfg(feature = "nn")]
-    let c_nn_out: Vec<ParmCiphertext>;
+    let p_nn_out: Vec<ParmCiphertext>;
     #[cfg(feature = "nn")]
     let m_nn_out: Vec<i64>;
     #[cfg(feature = "nn")]
@@ -566,12 +614,10 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["NN Eval (?? BS)"],
         [
-            c_nn_out = demo_nn().eval(&pc, &c_nn_in);
+            p_nn_out = demo_nn().eval(&pc, &c_nn_in);
         ]
     );
     m_nn_out = demo_nn().eval(&pc, &m_nn_in);
-
-    //TODO Concrete NN eval (nooo)
     }
 
 
@@ -583,22 +629,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     // decrypt plain Concrete's ciphertexts
     summary_text = format!("{}\n\nConcrete Decryption:", summary_text);
-    #[cfg(feature = "c4")]
+    #[cfg(feature = "concrete")]
     {
-    let _c_a4_v  = _c_ca4.decrypt(&_sek4);
+    let c_a_v  = _c_ca.decrypt(&client_key);
     summary_text = format!("{}\ndecr(encr(a)) = {:12} :: {} (exp. {})", summary_text,
-                            _c_a4_v,
-                            if _c_a4_v as i64 == a4_val & ((1 << 4) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            c_a_v,
+                            if c_a_v as i64 == a4_val & ((1 << 4) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a4_val & ((1 << 4) - 1)
-    );
-    }
-    #[cfg(feature = "c32")]
-    {
-    let _c_a_v   = _c_ca.decrypt(&_sek32);
-    summary_text = format!("{}\ndecr(encr(a)) = {:12} :: {} (exp. {})", summary_text,
-                            _c_a_v,
-                            if _c_a_v as i64 == a_val & ((1 << 32) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            a_val & ((1 << 32) - 1)
     );
     }
 
@@ -616,9 +653,9 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "add")]
     {
-    let add_a_b     = pu.decrypt(&c_add_a_b     )?;
-    let sub_c_d     = pu.decrypt(&c_sub_c_d     )?;
-    let add_ab_cnd  = pu.decrypt(&c_add_ab_cnd  )?;
+    let add_a_b     = pu.decrypt(&p_add_a_b     )?;
+    let sub_c_d     = pu.decrypt(&p_sub_c_d     )?;
+    let add_ab_cnd  = pu.decrypt(&p_add_ab_cnd  )?;
     summary_text = format!("{}\n\nAddition:", summary_text);
     summary_text = format!("{}\na + b         = {:12} :: {} (exp. {})", summary_text,
                             add_a_b,
@@ -639,8 +676,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "sgn")]
     {
-    let sgn_a       = pu.decrypt(&c_sgn_a       )?;
-    let sgn_abcnd   = pu.decrypt(&c_sgn_abcnd   )?;
+    let sgn_a       = pu.decrypt(&p_sgn_a       )?;
+    let sgn_abcnd   = pu.decrypt(&p_sgn_abcnd   )?;
     summary_text = format!("{}\n\nSignum:", summary_text);
     summary_text = format!("{}\nsgn(a)        = {:12} :: {} (exp. {})", summary_text,
                             sgn_a,
@@ -656,7 +693,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "round")]
     {
-    let round_a       = pu.decrypt(&c_round_a       )?;
+    let round_a       = pu.decrypt(&p_round_a       )?;
     // complex rounding of f64 in Rust:        sgn * (        abs          divide                     round                       )
     let round_a_val   = if a_val < 0 {-1} else {1} * (((a_val.abs() as f64 / (1 << ROUND_IDX) as f64).round() as u64) << ROUND_IDX) as i64;
     summary_text = format!("{}\n\nRounding:", summary_text);
@@ -669,9 +706,9 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "max")]
     {
-    let max_a_b     = pu.decrypt(&c_max_a_b     )?;
-    let max_c_d     = pu.decrypt(&c_max_c_d     )?;
-    let max_mab_mcd = pu.decrypt(&c_max_mab_mcd )?;
+    let max_a_b     = pu.decrypt(&p_max_a_b     )?;
+    let max_c_d     = pu.decrypt(&p_max_c_d     )?;
+    let max_mab_mcd = pu.decrypt(&p_max_mab_mcd )?;
     summary_text = format!("{}\n\nMaximum:", summary_text);
     summary_text = format!("{}\nmax{{a, b}}     = {:12} :: {} (exp. {})", summary_text,
                             max_a_b,
@@ -692,8 +729,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "mul_light")]
     {
-    let mul4_a_b    = pu.decrypt(&c_mul4_a_b    )?;
-    let mul8_a_b    = pu.decrypt(&c_mul8_a_b    )?;
+    let mul4_a_b    = pu.decrypt(&p_mul4_a_b    )?;
+    let mul8_a_b    = pu.decrypt(&p_mul8_a_b    )?;
     summary_text = format!("{}\n\nMultiplication:", summary_text);
     summary_text = format!("{}\na4 × b4       = {:22} :: {} (exp. {})", summary_text,
                             mul4_a_b,
@@ -708,8 +745,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     }
     #[cfg(feature = "mul")]
     {
-    let mul16_a_b   = pu.decrypt(&c_mul16_a_b   )?;
-    let mul32_a_b   = pu.decrypt(&c_mul32_a_b   )?;
+    let mul16_a_b   = pu.decrypt(&p_mul16_a_b   )?;
+    let mul32_a_b   = pu.decrypt(&p_mul32_a_b   )?;
     summary_text = format!("{}\na16 × b16     = {:22} :: {} (exp. {})", summary_text,
                             mul16_a_b,
                             if mul16_a_b == a16_val * b16_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -734,8 +771,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "squ_light")]
     {
-    let squ_a4      = pu.decrypt(&c_squ_a4      )?;
-    let squ_a8      = pu.decrypt(&c_squ_a8      )?;
+    let squ_a4      = pu.decrypt(&p_squ_a4      )?;
+    let squ_a8      = pu.decrypt(&p_squ_a8      )?;
     summary_text = format!("{}\n\nSquaring:", summary_text);
     summary_text = format!("{}\na4 ^ 2        = {:22} :: {} (exp. {})", summary_text,
                             squ_a4,
@@ -750,8 +787,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     }
     #[cfg(feature = "squ")]
     {
-    let squ_a16     = pu.decrypt(&c_squ_a16     )?;
-    let squ_a32     = pu.decrypt(&c_squ_a32     )?;
+    let squ_a16     = pu.decrypt(&p_squ_a16     )?;
+    let squ_a32     = pu.decrypt(&p_squ_a32     )?;
     summary_text = format!("{}\na16 ^ 2       = {:22} :: {} (exp. {})", summary_text,
                             squ_a16,
                             if squ_a16 == a16_val * a16_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -767,7 +804,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "scm")]
     {
     let mut scm16_a: Vec<i64> = Vec::new();
-    for ci in c_scm16_a {
+    for ci in p_scm16_a {
         scm16_a.push(pu.decrypt(&ci)?);
     }
     summary_text = format!("{}\n\nScalar Multiplication:", summary_text);
@@ -783,7 +820,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "nn")]
     {
     let mut nn_out_homo: Vec<i64> = Vec::new();
-    for ci in c_nn_out {
+    for ci in p_nn_out {
         nn_out_homo.push(pu.decrypt(&ci)?);
     }
     summary_text = format!("{}\n\nNeural Network Evaluation:", summary_text);
