@@ -7,7 +7,7 @@
 # no hyperthreading:
 #PBS -l select=1:ncpus=64:mem=1gb:scratch_local=1gb:cluster=halmir
 #
-#PBS -l walltime=00:10:00
+#PBS -l walltime=00:15:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
@@ -107,22 +107,29 @@ cp -r \
 # add exec rights
 chmod a+x $MEASURE_SCRIPT
 
+# --------------------------------------
 # run main command(s):
-# processor load measurements (log goes to raw-cpu-stats-dstat.log, besides operations.log)
+
+# processor load measurements (CPU log goes to raw-cpu-stats-dstat.log, besides operations.log)
 echo -e "\n>>> Running main command: CPU load & detailed measurements\n"
 ./$MEASURE_SCRIPT ./$BINARY_LOG
-#~ echo -e "\n>>> Running main command: benchmarking maximum performance\n"
-#~ ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
+mv operations.log operations-$MEASURE_METHOD.log
+
+# benchmark without extra measurements (log goes to operations.log)
+echo -e "\n>>> Running main command: benchmarking maximum performance\n"
+./$BINARY_BEN || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
+mv operations.log operations-bench.log
+# --------------------------------------
 
 # copy output log files
 ts=$(date +"%y-%m-%d_%H-%M")
 logpath=$DATA_DIR/logs/$CLUSTER_NAME/$ts
 mkdir -p $logpath
 
-mv operations.log operations-$MEASURE_METHOD.log
 
 cp \
     $CPU_STATS_LOG \
     operations-$MEASURE_METHOD.log \
+    operations-bench.log \
     $logpath || { echo >&2 "Error while copying result file(s)!"; exit 6; }
     #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }

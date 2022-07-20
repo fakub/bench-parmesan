@@ -25,6 +25,7 @@ set x2tics rotate by 45 left
 # custom xtic: https://stackoverflow.com/questions/50340829/gnuplot-using-xtic-from-data-but-plotting-only-every-10th
 
 # skip first two lines
+#TODO FIXME if cpu-load-ord-dstat.log is shorter than operations-dstat.log, it makes shit
 cpu_stats = "\"< paste cpu-load-ord-dstat.log operations-dstat.log\""
 
 set grid xtics ytics dt 3 lw 1 lt -1

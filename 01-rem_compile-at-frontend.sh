@@ -10,7 +10,7 @@
 #
 # Clone repos:
 # $ git clone --depth=1 --branch negacyclic https://github.com/fakub/concrete.git
-# $ git clone --depth=1                     https://gitlab.fit.cvut.cz/klemsjak/parmesan.git
+# $ git clone --depth=1                     https://github.com/fakub/parmesan.git
 # $ git clone --depth=1                     https://gitlab.fit.cvut.cz/klemsjak/bench-parmesan.git
 # $ git clone --depth=1 --branch 100ms      https://gitlab.fit.cvut.cz/klemsjak/dstat-with-short-intervals.git
 # $ mv concrete concrete-lib
