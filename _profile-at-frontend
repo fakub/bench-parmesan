@@ -16,7 +16,7 @@ echo "(!) Setting PBS server to    $PBS_SERVER    (changeme in .profile)"
 echo "(i) Other PBS servers:"
 echo "    $ export PBS_SERVER=cerit-pbs.cerit-sc.cz         # Samson"
 echo "    $ export PBS_SERVER=elixir-pbs.elixir-czech.cz    # Eltu / Elwe"
-echo "    $ export PBS_SERVER=meta-pbs.metacentrum.cz       # Kirke"
+echo "    $ export PBS_SERVER=meta-pbs.metacentrum.cz       # Kirke / Halmir"
 
 echo -e "(!) Consider running   $ kinit   to generate Kerberos tickets.\n"
 

@@ -38,8 +38,11 @@
 #   Setup Variables
 #
 
-# declare which binary is to be executed
-BINARY="bench-parmesan_ALL_LOG_znver2-AMD"
+# declare which binary is to be executed:
+# ALL_LOG .. compiled with "log_ops" feature (measurement & log at every call of measure_duration! -- which is at every operation)
+BINARY_LOG="bench-parmesan_ALL_LOG_znver2-AMD"
+# ALL_BEN .. compiled without any measurement feature (measurement & log only at simple_duration! -- which is not inside the lib)
+BINARY_BEN="bench-parmesan_ALL_BEN_znver2-AMD"
     # for Halmir, Kirke, Elwe and other AMD-based:
     #   bench-parmesan_ALL_BEN_znver2-AMD
     #   bench-parmesan_PBS_znver2-AMD
@@ -85,12 +88,13 @@ DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 rm -rf keys
 mkdir -p keys
 cp \
-    $DATA_DIR/keys/SK__n-474_N-1024_gamma-19_l-1_kappa-3_t-5.key \
-    $DATA_DIR/keys/BK__n-474_N-1024_gamma-19_l-1_kappa-3_t-5.key \
-    $DATA_DIR/keys/KSK__n-474_N-1024_gamma-19_l-1_kappa-3_t-5.key \
+    $DATA_DIR/keys/SK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key \
+    $DATA_DIR/keys/BK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key \
+    $DATA_DIR/keys/KSK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key \
     keys/ || { echo >&2 "Error while copying input file(s)!"; exit 2; }
 cp \
-    $DATA_DIR/bin/$BINARY \
+    $DATA_DIR/bin/$BINARY_LOG \
+    $DATA_DIR/bin/$BINARY_BEN \
     $DATA_DIR/dstat-with-short-intervals/dstat \
     $DATA_DIR/dstat-with-short-intervals/measure-dstat.sh \
     $DATA_DIR/dstat-with-short-intervals/measure-top.sh \
@@ -100,20 +104,25 @@ cp -r \
     $DATA_DIR/dstat-with-short-intervals/plugins \
     . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
 
-# run main command(s)
+# add exec rights
 chmod a+x $MEASURE_SCRIPT
-./$MEASURE_SCRIPT ./$BINARY
-# ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
+
+# run main command(s):
+# processor load measurements (log goes to raw-cpu-stats-dstat.log, besides operations.log)
+echo -e "\n>>> Running main command: CPU load & detailed measurements\n"
+./$MEASURE_SCRIPT ./$BINARY_LOG
+#~ echo -e "\n>>> Running main command: benchmarking maximum performance\n"
+#~ ./$BINARY || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
 
 # copy output log files
 ts=$(date +"%y-%m-%d_%H-%M")
 logpath=$DATA_DIR/logs/$CLUSTER_NAME/$ts
 mkdir -p $logpath
 
+mv operations.log operations-$MEASURE_METHOD.log
+
 cp \
     $CPU_STATS_LOG \
-    operations.log \
+    operations-$MEASURE_METHOD.log \
     $logpath || { echo >&2 "Error while copying result file(s)!"; exit 6; }
     #~ $DATA_DIR || { export CLEAN_SCRATCH=false; echo >&2 "Error while copying result file(s)! Try to copy them manually."; exit 6; }
-
-mv $logpath/operations.log $logpath/operations-$MEASURE_METHOD.log
