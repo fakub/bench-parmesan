@@ -62,9 +62,9 @@ if File.exists? LOG_DSTAT
     end
     end
 
-    puts "Pre-processed dstat log file: #{LOG_DSTAT}"
+    puts "(i) Pre-processed dstat log file: #{LOG_DSTAT}"
 else
-    puts "    (Log file #{LOG_DSTAT} not found.)"
+    puts "(i) Log file #{LOG_DSTAT} not found, not processing it."
 end
 
 
@@ -114,7 +114,7 @@ if File.exists? LOG_TOP
         end
     end
 
-    puts "Pre-processed top log file: #{LOG_TOP}"
+    puts "(i) Pre-processed top log file: #{LOG_TOP}"
 else
-    puts "    (Log file #{LOG_TOP} not found.)"
+    puts "(i) Log file #{LOG_TOP} not found, not processing it."
 end

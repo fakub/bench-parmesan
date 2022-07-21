@@ -47,6 +47,8 @@ All results are written into a `YY-MM-DD_hh-mm` folder on the cluster, with the 
 
 After copying the log folder from the cluster to a local folder, copy here also the data processing & plotting scripts from the `scripts` folder: `preproc-cpu-stats.rb` etc.
 The pre-processing script extracts lots of data and writes into respective log files.
+(In case it throws `element size differs (260 should be 257) (IndexError)`, check the `raw-cpu-stats-dstat.log` file for occurences of regexp `/missed [0-9]+ ticks/` and delete that.)
+
 Then edit the x-range [s] in the `plot-dstat.sh` script according to the range in the `operations-dstat.log` file: 2nd & 3rd column stands for mm:ss.
 E.g., for `operations-dstat.log`
 ```
