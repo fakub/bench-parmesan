@@ -138,11 +138,11 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "c4")]
     let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
     #[cfg(feature = "c8")]
-    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    let (client_key, server_key, encryptor) = (_sek8, _puk8, _cfg8);
     #[cfg(feature = "c16")]
-    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    let (client_key, server_key, encryptor) = (_sek16, _puk16, _cfg16);
     #[cfg(feature = "c32")]
-    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    let (client_key, server_key, encryptor) = (_sek32, _puk32, _cfg32);
     // .. and set as server key
     #[cfg(feature = "concrete")]
     set_server_key(server_key);
@@ -272,7 +272,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "add")]
     let (p_add_a_b, p_sub_c_d, p_add_ab_cnd);
     #[cfg(all(feature = "add", feature = "concrete"))]
-    let (c_add_a_b, c_sub_c_d, c_add_ab_cnd);
+    let (_c_add_a_b, _c_sub_c_d, _c_add_ab_cnd);
     #[cfg(feature = "add")]
     {
     // first level addition/subtraction:   a + b   ,   c - d
@@ -303,21 +303,21 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["Concrete::Add (1st lvl, {}-bit)", K],
         [
-            c_add_a_b = _c_ca.clone() + _c_cb.clone();
+            _c_add_a_b = _c_ca.clone() + _c_cb.clone();
         ]
     );
     simple_duration!(
         ["Concrete::Sub (1st lvl, {}-bit)", K],
         [
-            c_sub_c_d = _c_cc.clone() - _c_cd.clone();
+            _c_sub_c_d = _c_cc.clone() - _c_cd.clone();
         ]
     );
 
     // second level addition:   (a+b) + (c-d)
     simple_duration!(
-        ["Concrete::Add (2nd lvl, no refresh, {}-bit)", K],
+        ["Concrete::Add (2nd lvl, {}-bit)", K],
         [
-            c_add_ab_cnd = c_add_a_b.clone() + c_sub_c_d.clone();
+            _c_add_ab_cnd = _c_add_a_b.clone() + _c_sub_c_d.clone();
         ]
     );
     }
@@ -330,7 +330,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "scm")]
     let mut p_scm16_a: Vec<ParmCiphertext> = Vec::new();
     #[cfg(all(feature = "add", feature = "concrete"))]
-    let mut c_scm16_a = Vec::new();
+    let mut _c_scm16_a = Vec::new();
     #[cfg(feature = "scm")]
     {
     // scalar multiplication of 16-bit
@@ -351,7 +351,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
             ["Concrete::Sc. Mul ({}-bit, by {})", K, ki],
             [
                 let c_scmi = ki as u64 * _c_ca.clone();
-                c_scm16_a.push(c_scmi);
+                _c_scm16_a.push(c_scmi);
             ]
         );
     }
@@ -446,7 +446,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let (p_mul16_a_b, p_mul32_a_b);
 
     #[cfg(all(feature = "mul_light", feature = "concrete"))]
-    let c_mul_a_b;
+    let _c_mul_a_b;
 
     #[cfg(feature = "mul_light")]
     {
@@ -472,7 +472,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["Concrete::Mul ({}-bit)", K],
         [
-            c_mul_a_b = _c_ca.clone() * _c_cb.clone();
+            _c_mul_a_b = _c_ca.clone() * _c_cb.clone();
         ]
     );
     }
@@ -502,7 +502,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["Concrete::Mul ({}-bit)", K],
         [
-            c_mul_a_b = _c_ca.clone() * _c_cb.clone();
+            _c_mul_a_b = _c_ca.clone() * _c_cb.clone();
         ]
     );
     }
@@ -518,7 +518,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let (p_squ_a16, p_squ_a32);
 
     #[cfg(all(feature = "squ_light", feature = "concrete"))]
-    let c_squ_a_b;
+    let _c_squ_a_b;
 
     #[cfg(feature = "squ_light")]
     {
@@ -544,7 +544,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["Concrete::Squ ({}-bit)", K],
         [
-            c_squ_a_b = _c_ca.clone() * _c_ca.clone();
+            _c_squ_a_b = _c_ca.clone() * _c_ca.clone();
         ]
     );
     }
@@ -574,7 +574,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["Concrete::Squ ({}-bit)", K],
         [
-            c_squ_a_b = _c_ca.clone() * _c_ca.clone();
+            _c_squ_a_b = _c_ca.clone() * _c_ca.clone();
         ]
     );
     }
@@ -753,7 +753,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     //~ #[cfg(feature = "concrete")]
     //~ {
-    //~ let c_mul_a_b_v = c_mul_a_b.decrypt(&client_key);
+    //~ let c_mul_a_b_v = _c_mul_a_b.decrypt(&client_key);
     //~ summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
                             //~ c_mul_a_b_v,
                             //~ if c_mul_a_b_v == a_val as u64 * b_val as u64 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
