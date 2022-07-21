@@ -1,11 +1,10 @@
 #!/bin/bash
 #
 # with hyperthreading (only possible with place=exclhost; ncpus means CPU cores, this makes 128 threads, however, it is slower):
-# #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=halmir
-# #PBS -l place=exclhost
+# #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=halmir:place=exclhost
 #
 # no hyperthreading:
-#PBS -l select=1:ncpus=64:mem=1gb:scratch_local=1gb:cluster=halmir
+#PBS -l select=1:ncpus=64:mem=1gb:scratch_local=1gb:cluster=halmir:place=exclhost
 #
 #PBS -l walltime=00:15:00
 #
@@ -85,6 +84,7 @@ cd $SCRATCHDIR
 
 # copy files: keys, pre-compiled binary, measurement scripts
 DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
+# copy keys
 rm -rf keys
 mkdir -p keys
 cp \
@@ -92,6 +92,7 @@ cp \
     $DATA_DIR/keys/BK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key \
     $DATA_DIR/keys/KSK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key \
     keys/ || { echo >&2 "Error while copying input file(s)!"; exit 2; }
+# copy binaries & scripts
 cp \
     $DATA_DIR/bin/$BINARY_LOG \
     $DATA_DIR/bin/$BINARY_BEN \
@@ -99,10 +100,15 @@ cp \
     $DATA_DIR/dstat-with-short-intervals/measure-dstat.sh \
     $DATA_DIR/dstat-with-short-intervals/measure-top.sh \
     . || { echo >&2 "Error while copying input file(s)!"; exit 2; }
-
 cp -r \
     $DATA_DIR/dstat-with-short-intervals/plugins \
     . || { echo >&2 "Error while copying input folder(s)!"; exit 3; }
+# copy ASC's
+rm -rf assets
+mkdir -p assets
+cp \
+    $DATA_DIR/bench-parmesan/assets/asc-12.yaml \
+    assets/ || { echo >&2 "Error while copying input folder(s)!"; exit 4; }
 
 # add exec rights
 chmod a+x $MEASURE_SCRIPT
@@ -117,7 +123,7 @@ mv operations.log operations-$MEASURE_METHOD.log
 
 # benchmark without extra measurements (log goes to operations.log)
 echo -e "\n>>> Running main command: benchmarking maximum performance\n"
-./$BINARY_BEN || { echo >&2 "Calculation ended up erroneously (with a code $?) !!"; exit 5; }
+./$BINARY_BEN
 mv operations.log operations-bench.log
 # --------------------------------------
 
