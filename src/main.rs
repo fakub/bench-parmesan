@@ -35,6 +35,15 @@ use concrete::prelude::*;
 extern crate chrono;
 //~ use chrono::Utc;
 
+#[cfg(feature = "c4")]
+pub const K: usize = 4;
+#[cfg(feature = "c8")]
+pub const K: usize = 8;
+#[cfg(feature = "c16")]
+pub const K: usize = 16;
+#[cfg(feature = "c32")]
+pub const K: usize = 32;
+
 fn main() {
     // run benchmark
     println!();
@@ -137,19 +146,18 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // .. and set as server key
     #[cfg(feature = "concrete")]
     set_server_key(server_key);
-    //TODO setup a constant .. Concrete bit-len .. use in mul, squ, scm, decr check
 
 
     // =========================================================================
     //  Generate & Encrypt inputs
 
-    // 4 random 31-word sequences of {-1,0,1}
+    // 4 random 31-bit sequences of {-1,0,1}
     let a: Vec<i32> = vec![1,0,1,-1,-1,0,-1,1,1,-1,1,1,1,-1,-1,0,0,1,1,0,0,0,0,-1,0,0,0,0,0,-1,0,0,];
     let b: Vec<i32> = vec![-1,0,0,-1,1,1,-1,1,-1,0,0,1,0,1,1,0,0,0,-1,0,0,1,0,0,-1,0,-1,-1,-1,1,1,0,];
     let c: Vec<i32> = vec![-1,1,-1,1,-1,1,0,0,-1,0,-1,1,0,0,1,1,1,1,1,0,-1,0,0,-1,1,0,1,1,-1,-1,0,];
     let d: Vec<i32> = vec![1,0,1,0,0,1,0,-1,0,1,-1,0,0,0,-1,0,1,-1,1,1,0,0,-1,-1,0,0,1,1,1,1,0,];
 
-    // pairs of random 4-, 8-, 16- and 32-word sequences of {-1,0,1}
+    // pairs of random 4-, 8-, 16- and 32-bit sequences of {-1,0,1}
     let a4:  Vec<i32> = vec![1,-1,-1,0,];
     let b4:  Vec<i32> = vec![0,0,1,-1,];
     let a8:  Vec<i32> = vec![1,1,-1,-1,0,0,-1,-1,];
@@ -293,13 +301,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // first level addition/subtraction:   a + b   ,   c - d
     simple_duration!(
-        ["Concrete::Add (1st lvl)"],
+        ["Concrete::Add (1st lvl, {}-bit)", K],
         [
             c_add_a_b = _c_ca.clone() + _c_cb.clone();
         ]
     );
     simple_duration!(
-        ["Concrete::Sub (1st lvl)"],
+        ["Concrete::Sub (1st lvl, {}-bit)", K],
         [
             c_sub_c_d = _c_cc.clone() - _c_cd.clone();
         ]
@@ -307,7 +315,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     // second level addition:   (a+b) + (c-d)
     simple_duration!(
-        ["Concrete::Add (2nd lvl, no refresh)"],
+        ["Concrete::Add (2nd lvl, no refresh, {}-bit)", K],
         [
             c_add_ab_cnd = c_add_a_b.clone() + c_sub_c_d.clone();
         ]
@@ -325,10 +333,10 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let mut c_scm16_a = Vec::new();
     #[cfg(feature = "scm")]
     {
-    // scalar multiplication of 16-word
+    // scalar multiplication of 16-bit
     for ki in _k {
         simple_duration!(
-            ["Parmesan::Sc. Mul (16-word, by {})", ki],
+            ["Parmesan::Sc. Mul (16-bit, by {})", ki],
             [
                 p_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &_p_ca16));
             ]
@@ -340,7 +348,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // scalar multiplication
     for ki in _k {
         simple_duration!(
-            ["Concrete::Sc. Mul (k-word, by {})", ki],
+            ["Concrete::Sc. Mul ({}-bit, by {})", K, ki],
             [
                 let c_scmi = ki as u64 * _c_ca.clone();
                 c_scm16_a.push(c_scmi);
@@ -442,17 +450,17 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "mul_light")]
     {
-    // 4-word multiplication -> 8-word
+    // 4-bit multiplication -> 8-bit
     simple_duration!(
-        ["Parmesan::Mul (4-word)"],
+        ["Parmesan::Mul (4-bit)"],
         [
             p_mul4_a_b = ParmArithmetics::mul(&pc, &_p_ca4, &_p_cb4);
         ]
     );
 
-    // 8-word multiplication -> 16-word
+    // 8-bit multiplication -> 16-bit
     simple_duration!(
-        ["Parmesan::Mul (8-word)"],
+        ["Parmesan::Mul (8-bit)"],
         [
             p_mul8_a_b = ParmArithmetics::mul(&pc, &_p_ca8, &_p_cb8);
         ]
@@ -462,7 +470,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // multiplication
     simple_duration!(
-        ["Concrete::Mul (k-word)"],
+        ["Concrete::Mul ({}-bit)", K],
         [
             c_mul_a_b = _c_ca.clone() * _c_cb.clone();
         ]
@@ -472,17 +480,17 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "mul")]
     {
-    // 16-word multiplication -> 33-word
+    // 16-bit multiplication -> 33-bit
     simple_duration!(
-        ["Parmesan::Mul (16-word)"],
+        ["Parmesan::Mul (16-bit)"],
         [
             p_mul16_a_b = ParmArithmetics::mul(&pc, &_p_ca16, &_p_cb16);
         ]
     );
 
-    // 32-word multiplication -> 66-word (if there happen to be zeros at the leading positions after decryption, it PASSes)
+    // 32-bit multiplication -> 66-bit (if there happen to be zeros at the leading positions after decryption, it PASSes)
     simple_duration!(
-        ["Parmesan::Mul (32-word)"],
+        ["Parmesan::Mul (32-bit)"],
         [
             p_mul32_a_b = ParmArithmetics::mul(&pc, &_p_ca32, &_p_cb32);
         ]
@@ -492,7 +500,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // multiplication
     simple_duration!(
-        ["Concrete::Mul (K-word)"],
+        ["Concrete::Mul ({}-bit)", K],
         [
             c_mul_a_b = _c_ca.clone() * _c_cb.clone();
         ]
@@ -514,17 +522,17 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "squ_light")]
     {
-    // 4-word squaring -> 9-word (?)
+    // 4-bit squaring -> 9-bit (?)
     simple_duration!(
-        ["Parmesan::Squ (4-word)"],
+        ["Parmesan::Squ (4-bit)"],
         [
             p_squ_a4 = ParmArithmetics::squ(&pc, &_p_ca4);
         ]
     );
 
-    // 8-word squaring -> 18-word (?)
+    // 8-bit squaring -> 18-bit (?)
     simple_duration!(
-        ["Parmesan::Squ (8-word)"],
+        ["Parmesan::Squ (8-bit)"],
         [
             p_squ_a8 = ParmArithmetics::squ(&pc, &_p_ca8);
         ]
@@ -534,7 +542,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // squaring
     simple_duration!(
-        ["Concrete::Squ (k-word)"],
+        ["Concrete::Squ ({}-bit)", K],
         [
             c_squ_a_b = _c_ca.clone() * _c_ca.clone();
         ]
@@ -544,17 +552,17 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "squ")]
     {
-    // 16-word squaring -> 35-word (?)
+    // 16-bit squaring -> 35-bit (?)
     simple_duration!(
-        ["Parmesan::Squ (16-word)"],
+        ["Parmesan::Squ (16-bit)"],
         [
             p_squ_a16 = ParmArithmetics::squ(&pc, &_p_ca16);
         ]
     );
 
-    // 32-word squaring -> 68-word (?)
+    // 32-bit squaring -> 68-bit (?)
     simple_duration!(
-        ["Parmesan::Squ (32-word)"],
+        ["Parmesan::Squ (32-bit)"],
         [
             p_squ_a32 = ParmArithmetics::squ(&pc, &_p_ca32);
         ]
@@ -564,7 +572,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // squaring
     simple_duration!(
-        ["Concrete::Squ (K-word)"],
+        ["Concrete::Squ ({}-bit)", K],
         [
             c_squ_a_b = _c_ca.clone() * _c_ca.clone();
         ]
@@ -632,8 +640,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let c_a_v  = _c_ca.decrypt(&client_key);
     summary_text = format!("{}\ndecr(encr(a)) = {:12} :: {} (exp. {})", summary_text,
                             c_a_v,
-                            if c_a_v == a4_val as u64 & ((1 << 4) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            a4_val as u64 & ((1 << 4) - 1)
+                            if c_a_v == a_val as u64 & ((1 << K) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            a_val as u64 & ((1 << K) - 1)
     );
     }
 
@@ -670,10 +678,9 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if add_ab_cnd == add_a_b + sub_c_d {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             add_a_b + sub_c_d
     );
-    #[cfg(feature = "concrete")]
-    {
-    //TODO
-    }
+    //~ #[cfg(feature = "concrete")]
+    //~ {
+    //~ }
     }
 
     #[cfg(feature = "sgn")] // -------------------------------------------------
@@ -686,10 +693,10 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if sgn_a == a_val.signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a_val.signum()
     );
-    summary_text = format!("{}\nsgn(a+b+c-d)  = {:12} :: {} (exp. {})", summary_text,
+    summary_text = format!("{}\nsgn(a+b)      = {:12} :: {} (exp. {})", summary_text,
                             sgn_ab,
-                            if sgn_ab == (a_val + b_val + c_val - d_val).signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (a_val + b_val + c_val - d_val).signum()
+                            if sgn_ab == (a_val + b_val).signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            (a_val + b_val).signum()
     );
     }
 
@@ -744,15 +751,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if mul8_a_b == a8_val * b8_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a8_val * b8_val
     );
-    #[cfg(feature = "concrete")]
-    {
-    let c_mul_a_b_v = c_mul_a_b.decrypt(&client_key);
-    summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
-                            c_mul_a_b_v,
-                            if c_mul_a_b_v == a_val as u64 * b_val as u64 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            a_val as u64 * b_val as u64
-    );
-    }
+    //~ #[cfg(feature = "concrete")]
+    //~ {
+    //~ let c_mul_a_b_v = c_mul_a_b.decrypt(&client_key);
+    //~ summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
+                            //~ c_mul_a_b_v,
+                            //~ if c_mul_a_b_v == a_val as u64 * b_val as u64 {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            //~ a_val as u64 * b_val as u64
+    //~ );
+    //~ }
     }
     #[cfg(feature = "mul")] // -------------------------------------------------
     {
@@ -785,10 +792,9 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             if squ_a8 == a8_val * a8_val {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             a8_val * a8_val
     );
-    #[cfg(feature = "concrete")]
-    {
-    //TODO
-    }
+    //~ #[cfg(feature = "concrete")]
+    //~ {
+    //~ }
     }
     #[cfg(feature = "squ")] // -------------------------------------------------
     {
@@ -820,10 +826,9 @@ fn bench() -> Result<(), Box<dyn Error>> {
                                 (*ki as i64) * a16_val
         );
     }
-    #[cfg(feature = "concrete")]
-    {
-    //TODO
-    }
+    //~ #[cfg(feature = "concrete")]
+    //~ {
+    //~ }
     }
 
     #[cfg(feature = "nn")] // --------------------------------------------------
