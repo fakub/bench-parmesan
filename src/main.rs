@@ -162,12 +162,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let b32: Vec<i32> = vec![1,-1,-1,-1,1,-1,1,-1,0,1,-1,0,1,0,1,0,-1,1,1,-1,1,-1,-1,0,0,-1,-1,0,-1,-1,-1,0,];
 
     // "random" scalars
-    let _k: [i32; 5] = [    // Hamming weight after optimization:
-        -161,               // 3:   0   1   0   1   0   0   0   0   1
-        0b11101111,         // 3:   1   0   0   0  -1   0   0   0  -1
-        0b11100111,         // 4:   1   0   0  -1   0   1   0   0  -1
-        0b10101010,         // 4:   0   1   0   1   0   1   0   1   0
-        0b11011011,         // 4:   1   0   0  -1   0   0  -1   0  -1
+    let _k: [i32; 6] = [    // optimal ASC*'s
+        -161,               // /2/ [◖ 1 ◗, ◖ 5 =  1 + 1·2^2 ◗, ◖ 161 =  1 + 5·2^5 ◗]
+        805,                // /3/ [◖ 1 ◗, ◖ 5 =  1 + 1·2^2 ◗, ◖ 25 =  5 + 5·2^2 ◗, ◖ 805 =  5 + 25·2^5 ◗]
+        1173,               // /3/ [◖ 1 ◗, ◖ 17 =  1 + 1·2^4 ◗, ◖ 289 =  17 + 17·2^4 ◗, ◖ 1173 =  17 + 289·2^2 ◗]
+        1209,               // /3/ [◖ 1 ◗, ◖ 31 = -1 + 1·2^5 ◗, ◖ 155 =  31 + 31·2^2 ◗, ◖ 1209 = -31 + 155·2^3 ◗]
+        3195,               // /3/ [◖ 1 ◗, ◖ 5 =  1 + 1·2^2 ◗, ◖ 25 =  5 + 5·2^2 ◗, ◖ 3195 = -5 + 25·2^7 ◗]
+        3813,               // /3/ [◖ 1 ◗, ◖ 31 = -1 + 1·2^5 ◗, ◖ 961 = -31 + 31·2^5 ◗, ◖ 3813 = -31 + 961·2^2 ◗]
     ];
 
     // convert to actual numbers
@@ -316,25 +317,58 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
 
     // =========================================================================
+    //  Scalar Multiplication
+
+    #[cfg(feature = "scm")]
+    let mut p_scm16_a: Vec<ParmCiphertext> = Vec::new();
+    #[cfg(all(feature = "add", feature = "concrete"))]
+    let mut c_scm16_a = Vec::new();
+    #[cfg(feature = "scm")]
+    {
+    // scalar multiplication of 16-word
+    for ki in _k {
+        simple_duration!(
+            ["Parmesan::Sc. Mul (16-word, by {})", ki],
+            [
+                p_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &_p_ca16));
+            ]
+        );
+    }
+
+    #[cfg(feature = "concrete")]
+    {
+    // scalar multiplication
+    for ki in _k {
+        simple_duration!(
+            ["Concrete::Sc. Mul (k-word, by {})", ki],
+            [
+                let c_scmi = ki as u64 * _c_ca.clone();
+                c_scm16_a.push(c_scmi);
+            ]
+        );
+    }
+    }
+    }
+
+
+    // =========================================================================
     //  Signum
 
     #[cfg(feature = "sgn")]
-    let (p_sgn_a, p_sgn_abcnd);
+    let (p_sgn_a, p_sgn_ab);
     #[cfg(feature = "sgn")]
     {
-    // first level signum
     simple_duration!(
-        ["Parmesan::Sgn (no BS, 1st lvl)"],
+        ["Parmesan::Sgn a"],
         [
             p_sgn_a = ParmArithmetics::sgn(&pc, &_p_ca);
         ]
     );
 
-    // second level signum
     simple_duration!(
-        ["Parmesan::Sgn (w BS, 2nd lvl)"],
+        ["Parmesan::Sgn (a+b)"],
         [
-            p_sgn_abcnd = ParmArithmetics::sgn(&pc, &p_add_ab_cnd);
+            p_sgn_ab = ParmArithmetics::sgn(&pc, &p_add_a_b);
         ]
     );
 
@@ -351,7 +385,6 @@ fn bench() -> Result<(), Box<dyn Error>> {
     const ROUND_IDX: usize = 6;
     #[cfg(feature = "round")]
     {
-    // first level rounding
     simple_duration!(
         ["Parmesan::Round"],
         [
@@ -372,13 +405,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     {
     // first level maximum
     simple_duration!(
-        ["Parmesan::Max (no BS, 1st lvl)"],
+        ["Parmesan::Max (1st lvl)"],
         [
             p_max_a_b = ParmArithmetics::max(&pc, &_p_ca, &_p_cb);
         ]
     );
     simple_duration!(
-        ["Parmesan::Max (no BS, 1st lvl)"],
+        ["Parmesan::Max (1st lvl)"],
         [
             p_max_c_d = ParmArithmetics::max(&pc, &_p_cc, &_p_cd);
         ]
@@ -386,7 +419,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     // second level maximum
     simple_duration!(
-        ["Parmesan::Max (w BS, 2nd lvl)"],
+        ["Parmesan::Max (2nd lvl)"],
         [
             p_max_mab_mcd = ParmArithmetics::max(&pc, &p_max_a_b, &p_max_c_d);
         ]
@@ -541,41 +574,6 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
 
     // =========================================================================
-    //  Scalar Multiplication
-
-    #[cfg(feature = "scm")]
-    let mut p_scm16_a: Vec<ParmCiphertext> = Vec::new();
-    #[cfg(all(feature = "add", feature = "concrete"))]
-    let mut c_scm16_a = Vec::new();
-    #[cfg(feature = "scm")]
-    {
-    // scalar multiplication of 16-word
-    for ki in _k {
-        simple_duration!(
-            ["Parmesan::Sc. Mul (16-word, by {})", ki],
-            [
-                p_scm16_a.push(ParmArithmetics::scalar_mul(&pc, ki, &_p_ca16));
-            ]
-        );
-    }
-
-    #[cfg(feature = "concrete")]
-    {
-    // scalar multiplication
-    for ki in _k {
-        simple_duration!(
-            ["Concrete::Sc. Mul (k-word, by {})", ki],
-            [
-                let c_scmi = ki as u64 * _c_ca.clone();
-                c_scm16_a.push(c_scmi);
-            ]
-        );
-    }
-    }
-    }
-
-
-    // =========================================================================
     //  NN Evaluation
 
     #[cfg(feature = "nn")]
@@ -681,7 +679,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "sgn")] // -------------------------------------------------
     {
     let sgn_a       = pu.decrypt(&p_sgn_a       )?;
-    let sgn_abcnd   = pu.decrypt(&p_sgn_abcnd   )?;
+    let sgn_ab      = pu.decrypt(&p_sgn_ab   )?;
     summary_text = format!("{}\n\nSignum:", summary_text);
     summary_text = format!("{}\nsgn(a)        = {:12} :: {} (exp. {})", summary_text,
                             sgn_a,
@@ -689,8 +687,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
                             a_val.signum()
     );
     summary_text = format!("{}\nsgn(a+b+c-d)  = {:12} :: {} (exp. {})", summary_text,
-                            sgn_abcnd,
-                            if sgn_abcnd == (a_val + b_val + c_val - d_val).signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            sgn_ab,
+                            if sgn_ab == (a_val + b_val + c_val - d_val).signum() {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
                             (a_val + b_val + c_val - d_val).signum()
     );
     }

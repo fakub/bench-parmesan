@@ -10,7 +10,7 @@ parmesan = { path = "../parmesan" }
 colored = "^2.0.0"
 rayon = "^1.5.1"
 chrono = "^0.4.0"
-concrete = { version = "^0.2.0-beta", features = ["integers", "shortints", "serde"]}
+concrete = { version = "^0.2.0-beta", features = ["integers"]}
 bincode = "^1.3.3"
 
 [features]
