@@ -1,10 +1,10 @@
 #!/bin/bash
 #
 # with hyperthreading (only possible with place=exclhost; ncpus means CPU cores, this makes 128 threads, however, it is slower):
-# #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=halmir:place=exclhost
+# #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=halmir -l place=exclhost
 #
 # no hyperthreading:
-#PBS -l select=1:ncpus=64:mem=1gb:scratch_local=1gb:cluster=halmir:place=exclhost
+#PBS -l select=1:ncpus=64:mem=1gb:scratch_local=1gb:cluster=halmir -l place=exclhost
 #
 #PBS -l walltime=00:30:00
 #
