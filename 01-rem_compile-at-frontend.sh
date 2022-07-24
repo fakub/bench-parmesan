@@ -74,23 +74,19 @@ cd bench-parmesan
 # for AMD EPYC (and copy)
 export RUSTFLAGS="-C target-cpu=znver2"
 
-cargo build --release --no-default-features --features "all"
-mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_BEN_znver2-AMD
-cargo build --release --no-default-features --features "all log_ops"
-mv target/release/bench-parmesan ../bin/bench-parmesan_ALL_LOG_znver2-AMD
-#~ cargo build --release --no-default-features --features "pbs"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_PBS_znver2-AMD
-#~ cargo build --release --no-default-features --features "add"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_ADD_znver2-AMD
-#~ cargo build --release --no-default-features --features "sgn"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_SGN_znver2-AMD
-#~ cargo build --release --no-default-features --features "max"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_MAX_znver2-AMD
-#~ cargo build --release --no-default-features --features "mul"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_MUL_znver2-AMD
-#~ cargo build --release --no-default-features --features "squ"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_SQU_znver2-AMD
-#~ cargo build --release --no-default-features --features "scm"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_SCM_znver2-AMD
-#~ cargo build --release --no-default-features --features "nn"
-#~ mv target/release/bench-parmesan ../bin/bench-parmesan_NN_znver2-AMD
+cargo build --release --no-default-features --features "c4 all_light"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C4_BEN_znver2-AMD
+cargo build --release --no-default-features --features "c4 all_light log_ops"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C4_LOG_znver2-AMD
+cargo build --release --no-default-features --features "c8 all_light"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C8_BEN_znver2-AMD
+cargo build --release --no-default-features --features "c8 all_light log_ops"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C8_LOG_znver2-AMD
+cargo build --release --no-default-features --features "c16 all"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C16_BEN_znver2-AMD
+cargo build --release --no-default-features --features "c16 all log_ops"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C16_LOG_znver2-AMD
+cargo build --release --no-default-features --features "c32 all"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C32_BEN_znver2-AMD
+cargo build --release --no-default-features --features "c32 all log_ops"
+mv target/release/bench-parmesan ../bin/bench-parmesan_C32_LOG_znver2-AMD

@@ -34,7 +34,7 @@ measure     = []                                # measure is needed for measure_
 log_ops     = ["measure", "parmesan/log_ops"]
 # Concrete precisions
 concrete    = []
-c4          = []
-c8          = []
-c16         = []
-c32         = []
+c4          = ["concrete"]
+c8          = ["concrete"]
+c16         = ["concrete"]
+c32         = ["concrete"]

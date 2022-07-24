@@ -24,13 +24,13 @@ scm:
 nn:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "nn"
 concrete_4bit:
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "concrete c4 all_light"
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "c4 all_light"
 concrete_8bit:
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "concrete c8 all_light"
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "c8 all_light"
 concrete_16bit:
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "concrete c16 all"
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "c16 all"
 concrete_32bit:
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "concrete c32 all"
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "c32 all"
 
 # build-only
 build:
