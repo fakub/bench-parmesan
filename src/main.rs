@@ -393,7 +393,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(feature = "round")]
     let p_round_a: ParmCiphertext;
     #[cfg(feature = "round")]
-    const ROUND_IDX: usize = 6;
+    const ROUND_IDX: usize = 5;   // this is convenient for sgn
     #[cfg(feature = "round")]
     {
     simple_duration!(
