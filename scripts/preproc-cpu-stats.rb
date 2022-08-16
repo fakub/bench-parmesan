@@ -21,6 +21,8 @@ if File.exists? LOG_DSTAT
 
     # skip first two lines
     File.readlines(LOG_DSTAT).drop(2).each do |ls|
+        # replace /missed [0-9]+ ticks/
+        ls.gsub!(/missed [0-9]+ ticks/, "")
         # load as int/float-from-mm:ss.sss
         ary << ls.gsub("|", " ").split.map{|n|n.include?(".") ? \
             n.gsub(":", " ").split.map{|t|t.to_f}.zip([60, 1]).map{|p|p.reduce(:*)}.reduce(:+) : \
@@ -35,19 +37,23 @@ if File.exists? LOG_DSTAT
         # write load & freq maps, systime
         is_load = true
         ts_index = 0
-        ary.transpose.each.with_index do |l,i|
-            is_load = false if l.first.is_a? Float
-            ts_index = i    if l.first.is_a? Float
-            la = l.map do |n|
-                n.is_a?(Integer) ? sprintf(" %3d", n) : sprintf(" %7.3f", n)
+        begin
+            ary.transpose.each.with_index do |l,i|
+                is_load = false if l.first.is_a? Float
+                ts_index = i    if l.first.is_a? Float
+                la = l.map do |n|
+                    n.is_a?(Integer) ? sprintf(" %3d", n) : sprintf(" %7.3f", n)
+                end
+                if l.first.is_a? Float
+                    f_syst.write la.join + "\n"
+                elsif is_load
+                    f_load_map.write la.join + "\n"
+                else
+                    f_freq_map.write la.join + "\n"
+                end
             end
-            if l.first.is_a? Float
-                f_syst.write la.join + "\n"
-            elsif is_load
-                f_load_map.write la.join + "\n"
-            else
-                f_freq_map.write la.join + "\n"
-            end
+        rescue
+            raise "(!) File '#{LOG_DSTAT}' contains extra columns, exiting."
         end
 
         # write ordered load (for bar graph)
