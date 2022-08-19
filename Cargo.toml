@@ -7,6 +7,8 @@ edition = "2018"
 
 [dependencies]
 parmesan = "^0.0.20-alpha-1"
+concrete = { version = "^0.2.0-beta.2", features = ["integers", "serde"] }
+bincode = "^1.3.3"
 colored = "^2.0.0"
 rayon = "^1.5.1"
 chrono = "^0.4.0"
