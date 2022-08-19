@@ -97,14 +97,9 @@ DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 rm -rf keys
 mkdir -p keys
 cp \
-    $DATA_DIR/keys/SK__n-776_N-2048_gamma-23_l-1_kappa-4_t-5.key  \
-    $DATA_DIR/keys/BK__n-776_N-2048_gamma-23_l-1_kappa-4_t-5.key  \
-    $DATA_DIR/keys/KSK__n-776_N-2048_gamma-23_l-1_kappa-4_t-5.key \
+    $DATA_DIR/keys/concrete_keys__n-774_N-2048_gamma-23_l-1_kappa-4_t-5_v0.2.key \
     $DATA_DIR/keys/concrete-keys.key \
     keys/ || { echo >&2 "Error while copying input file(s)!"; exit 2; }
-    #~ $DATA_DIR/keys/SK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key  \
-    #~ $DATA_DIR/keys/BK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key  \
-    #~ $DATA_DIR/keys/KSK__n-473_N-1024_gamma-19_l-1_kappa-3_t-5.key \
 
 # copy binaries & scripts
 cp \
