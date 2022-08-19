@@ -1,5 +1,5 @@
 # run with default settings in Cargo.toml
-light:
+all_light:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "all_light"
 all:
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "all"

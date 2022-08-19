@@ -18,22 +18,14 @@
 #
 #   Update all repos
 #
-cd concrete-lib
-git checkout negacyclic
-git pull
-
-cd ../parmesan
+cd bench-parmesan
 git checkout master
 git pull
+cd ..
 
-cd ../bench-parmesan
-git checkout master
-git pull
-
-cd ../dstat-with-short-intervals
+cd dstat-with-short-intervals
 git checkout 100ms
 git pull
-
 cd ..
 
 #

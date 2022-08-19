@@ -9,7 +9,7 @@ use colored::Colorize;
 // Parmesan
 use parmesan::*;
 #[allow(unused_imports)]
-use parmesan::ciphertexts::{ParmCiphertext, ParmCiphertextExt};
+use parmesan::ciphertexts::{ParmCiphertext, ParmCiphertextImpl};
 
 use parmesan::ParmesanUserovo;
 
@@ -72,7 +72,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // -------------------------------------------------------------------------
     //  Parmesan parameters & key setup
 
-    let par = &params::CONCR__M_2__C_3;   //  PARM80__PI_5__D_22    112    128   // or params from Concrete v0.2: CONCR__M_2__C_3
+    let par = &params::PAR_CNCR_V0_2__M3_C2;
     simple_duration!(
         ["Setup Parmesan keys"],
         [
@@ -183,21 +183,21 @@ fn bench() -> Result<(), Box<dyn Error>> {
     ];
 
     // convert to actual numbers
-    let a_val = encryption::convert(&a)?;
-    let b_val = encryption::convert(&b)?;
-    let c_val = encryption::convert(&c)?;
-    let d_val = encryption::convert(&d)?;
+    let a_val = encryption::convert_from_vec(&a)?;
+    let b_val = encryption::convert_from_vec(&b)?;
+    let c_val = encryption::convert_from_vec(&c)?;
+    let d_val = encryption::convert_from_vec(&d)?;
 
-    let a4_val  = encryption::convert(&a4 )?;
-    let b4_val  = encryption::convert(&b4 )?;
-    let a8_val  = encryption::convert(&a8 )?;
-    let b8_val  = encryption::convert(&b8 )?;
-    let c8_val  = encryption::convert(&c8 )?;
-    let d8_val  = encryption::convert(&d8 )?;
-    let a16_val = encryption::convert(&a16)?;
-    let b16_val = encryption::convert(&b16)?;
-    let a32_val = encryption::convert(&a32)?;
-    let b32_val = encryption::convert(&b32)?;
+    let a4_val  = encryption::convert_from_vec(&a4 )?;
+    let b4_val  = encryption::convert_from_vec(&b4 )?;
+    let a8_val  = encryption::convert_from_vec(&a8 )?;
+    let b8_val  = encryption::convert_from_vec(&b8 )?;
+    let c8_val  = encryption::convert_from_vec(&c8 )?;
+    let d8_val  = encryption::convert_from_vec(&d8 )?;
+    let a16_val = encryption::convert_from_vec(&a16)?;
+    let b16_val = encryption::convert_from_vec(&b16)?;
+    let a32_val = encryption::convert_from_vec(&a32)?;
+    let b32_val = encryption::convert_from_vec(&b32)?;
 
     // print inputs
     println!("\n{}:\n", String::from("Inputs").bold().yellow());
@@ -250,7 +250,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     //  Programmable Bootstrapping
 
     #[cfg(feature = "pbs")]
-    let mut _p_c_pbs_id_a = ParmCiphertext::single(_p_ca[0].clone());
+    let mut _p_c_pbs_id_a = vec![_p_ca[0].clone()];
     #[cfg(feature = "pbs")]
     {
     simple_duration!(
@@ -260,7 +260,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
             ["Pbs {}x", PBS_N],
             [
                 for _ in 0..PBS_N {
-                    _p_c_pbs_id_a = ParmCiphertext::single(pbs::id__pi_5(&pc.pub_keys, &_p_ca[0])?);
+                    _p_c_pbs_id_a = ParmCiphertext::single(pbs::id__pi_5(&pc, &_p_ca[0])?);
                 }
             ]
         );

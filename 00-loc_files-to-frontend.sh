@@ -17,5 +17,4 @@ scp \
     skirit:~/.profile
 
 echo "(check that ALL keys are already copied: SK, BK, KSK)"
-echo "(check branches in 01-rem_compile...sh)"
 # possibly archive repos with   $ archive-repo <repo>
