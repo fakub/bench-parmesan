@@ -66,19 +66,19 @@ cd bench-parmesan
 # for AMD EPYC (and copy)
 export RUSTFLAGS="-C target-cpu=znver2"
 
-cargo build --release --no-default-features --features "c4 all_light"
+cargo build --release --no-default-features --features "4bit concrete all_light"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C4_BEN_znver2-AMD
-cargo build --release --no-default-features --features "c4 all_light log_ops"
+cargo build --release --no-default-features --features "4bit concrete all_light log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C4_LOG_znver2-AMD
-cargo build --release --no-default-features --features "c8 all_light"
+cargo build --release --no-default-features --features "8bit concrete all_light"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C8_BEN_znver2-AMD
-cargo build --release --no-default-features --features "c8 all_light log_ops"
+cargo build --release --no-default-features --features "8bit concrete all_light log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C8_LOG_znver2-AMD
-cargo build --release --no-default-features --features "c16 all"
+cargo build --release --no-default-features --features "16bit concrete all"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C16_BEN_znver2-AMD
-cargo build --release --no-default-features --features "c16 all log_ops"
+cargo build --release --no-default-features --features "16bit concrete all log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C16_LOG_znver2-AMD
-cargo build --release --no-default-features --features "c32 all"
+cargo build --release --no-default-features --features "32bit concrete all"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C32_BEN_znver2-AMD
-cargo build --release --no-default-features --features "c32 all log_ops"
+cargo build --release --no-default-features --features "32bit concrete all log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C32_LOG_znver2-AMD
