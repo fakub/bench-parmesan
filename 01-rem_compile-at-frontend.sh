@@ -65,6 +65,8 @@ cd bench-parmesan
 
 # for AMD EPYC (and copy)
 export RUSTFLAGS="-C target-cpu=znver2"
+# for some reason (some dependency requires that), it compiles better with nightly
+rustup override set nightly
 
 cargo build --release --no-default-features --features "4bit concrete all_light"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C4_BEN_znver2-AMD

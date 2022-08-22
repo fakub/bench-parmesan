@@ -72,7 +72,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // -------------------------------------------------------------------------
     //  Parmesan parameters & key setup
 
-    let par = &params::PAR_CNCR_V0_2__M3_C2;
+    let par = &params::PAR_CNCR_V0_2__M2_C3;
     simple_duration!(
         ["Setup Parmesan keys"],
         [
@@ -99,7 +99,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
                  ClientKey,ServerKey,DynIntegerEncryptor);
     #[cfg(feature = "concrete")]
     {
-    let concrete_key_path = Path::new("./keys/concrete-keys.key");
+    let concrete_key_path = Path::new("./keys/concrete-keys-encryptors__4-8-16-32.key");
     // setup keys
     simple_duration!(
         ["Setup Concrete keys"],

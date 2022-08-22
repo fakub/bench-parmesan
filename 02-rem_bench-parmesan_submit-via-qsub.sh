@@ -97,8 +97,8 @@ DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 rm -rf keys
 mkdir -p keys
 cp \
-    $DATA_DIR/keys/concrete_keys__n-774_N-2048_gamma-23_l-1_kappa-4_t-5_v0.2.key \
-    $DATA_DIR/keys/concrete-keys.key \
+    $DATA_DIR/keys/parcrete-keys__n-776_N-2048_gamma-23_l-1_kappa-4_t-5_v0.2.key \
+    $DATA_DIR/keys/concrete-keys-encryptors__4-8-16-32.key \
     keys/ || { echo >&2 "Error while copying input file(s)!"; exit 2; }
 
 # copy binaries & scripts
