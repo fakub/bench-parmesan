@@ -1,13 +1,15 @@
 
 #   Benchmarking Parmesan
 
-... implements a bunch of scripts for experimental evaluation of Parmesan's arithmetic operations.
+Implements a bunch of scripts for experimental evaluation of Parmesan's arithmetic operations.
+The code is indeed very "experimental" and this README might be obsolete.
 
 
 ## Select Operations
 
-There are currently the following Rust features, that allow to select what operations will be executed:
+There are currently the following Rust features, that allow to select the input length and what operations will be executed:
 
+  * "4bit", ..., "32bit": input bit-length,
   * "pbs": runs programmable bootstrapping `PBS_N`-times,
   * "add": addition,
   * "sgn": signum,
@@ -23,8 +25,9 @@ There are currently the following Rust features, that allow to select what opera
 
 There are two levels of measurements & logging that can be set up by the following Rust features:
 
-  * "measure": each `measure_duration!` macro within Parmesan's code measures the timing of respective block (including nested occurences),
-  * "log_ops": logs the measured timing into the `operations.log` file.
+  * "log_ops":
+    * turns ON the "measure" feature of Parmesan, which makes each `measure_duration!` macro inside Parmesan's code measure the timing of respective block (including nested occurences),
+    * logs the measured timings into the `operations.log` file.
 
 ### For Analysis
 
@@ -32,7 +35,7 @@ Compile with the "log_ops" feature: most of the nested operations will be measur
 
 ### For Best Performance
 
-Compile without any feature: just overall operations' timing will be written into the `operations.log` file (everything called by the `simple_duration!` macro), without affecting any nested call.
+Compile without the "log_ops" feature: only overall operations' timing will be written into the `operations.log` file (everything called by the `simple_duration!` macro), without affecting any nested call.
 
 
 ## Running on a Cluster
@@ -62,19 +65,22 @@ set xrange [2990:3030]
 ```
 Running `plot-dstat.sh` then creates an overview of operations and respective processor load in time, with major operations highlighted.
 
-FIXME: if `operations-dstat.log` is longer than `raw-cpu-stats-dstat.log`, merging them in `plot-dstat.sh` makes shit. Can be fixed manually by appending zero-filled lines to `cpu-load-ord-dstat.log`.
+FIXME: if `operations-dstat.log` is longer than `raw-cpu-stats-dstat.log`, merging them with `plot-dstat.sh` makes shish. Can be fixed manually by appending zero-filled lines to `cpu-load-ord-dstat.log`.
 
 
 ## Dev Questions
 
-* Is the fork/branch of `dstat` the ideal way to log the processor load?
-* How to set the highest CPU clock? Btw does this make sense wrt CPU temperature?
-    * `-l select=cpu_flag=<some-turbo-flag>` ?
-    * maybe [only one core](https://en.wikichip.org/wiki/intel/xeon_platinum/8280)?
-* Advanced: 2 or 3 [UPI links](https://en.wikichip.org/wiki/intel/microarchitectures/cascade_lake) in configurations with Intel Xeon?
-* C.f. other settings on [wiki](https://wiki.metacentrum.cz/wiki/About_scheduling_system).
+  * Is the fork/branch of `dstat` the ideal way to log the processor load?
+  * How to set the CPU clock? Use some boost flag? Btw does this make sense wrt CPU temperature?
+    * sth like: `-l select=cpu_flag=<some-turbo-flag>`
+  * Other settings on [wiki](https://wiki.metacentrum.cz/wiki/About_scheduling_system).
 
 
 ## License
 
 Parmesan is licensed under AGPLv3.
+
+
+## Acknowledgments
+
+Partially supported by [EURECOM](https://www.eurecom.fr/).
