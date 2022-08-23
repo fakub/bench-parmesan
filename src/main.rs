@@ -6,6 +6,9 @@ use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
 use colored::Colorize;
 
+#[macro_use]
+extern crate lazy_static;
+
 // Parmesan
 use parmesan::*;
 #[allow(unused_imports)]
@@ -30,10 +33,41 @@ use parmesan::arithmetics::ParmArithmetics;
 use concrete::*;
 #[cfg(feature = "concrete")]
 use concrete::prelude::*;
+#[cfg(feature = "concrete")]    // params for CRT (there are no default params)
+use concrete_shortint::parameters::*;
+#[cfg(feature = "concrete")]    // params for CRT (there are no default params)
+use concrete_integer::crt::*;
 
 // timing measurements
 extern crate chrono;
 //~ use chrono::Utc;
+
+#[cfg(feature = "concrete")]
+pub const CRT4_BASIS: [u64; 2] = [4, 5];                                        // 20 > 16
+#[cfg(feature = "concrete")]
+pub const CRT8_BASIS: [u64; 3] = [5, 7, 8];                                     // 280 > 256
+#[cfg(feature = "concrete")]
+pub const CRT16_BASIS: [u64; 5] = [7, 8, 9, 11, 13];                            // 72'072 > 65'536
+#[cfg(feature = "concrete")]
+pub const CRT32_BASIS: [u64; 7] = [13, 23, 25, 27, 29, 31, 32];                 // 5'806'101'600 > 2^32
+//~ pub const CRT32_BASIS: [u64; 8] = [8, 11, 13, 17, 19, 23, 25, 27];              // 5'736'673'800 > 2^32
+
+#[cfg(feature = "concrete")]    // index also means the number of message bits
+lazy_static! {
+    pub static ref CRT_PARAMS_ALL: Vec<DynShortIntParameters> = vec![
+        DEFAULT_PARAMETERS,
+        PARAM_MESSAGE_1_CARRY_1,
+        PARAM_MESSAGE_2_CARRY_1,
+        PARAM_MESSAGE_3_CARRY_1,
+        PARAM_MESSAGE_4_CARRY_1,
+        PARAM_MESSAGE_5_CARRY_1,
+    ];
+    pub static ref CRT4_PARAM_IDS: Vec<usize> = vec![2, 3];
+    pub static ref CRT8_PARAM_IDS: Vec<usize> = vec![3, 3, 3];
+    pub static ref CRT16_PARAM_IDS: Vec<usize> = vec![3, 3, 4, 4, 4];
+    //~ pub static ref CRT32_PARAM_IDS: Vec<usize> = vec![3, 4, 4, 5, 5, 5, 5, 5];
+    pub static ref CRT32_PARAM_IDS: Vec<usize> = vec![4, 5, 5, 5, 5, 5, 5];
+}
 
 #[cfg(feature = "4bit")]
 pub const BITLEN: usize = 4;
@@ -92,19 +126,25 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // Concrete parameters & key setup
 
     #[cfg(feature = "concrete")]
-    let (_sek4,_puk4,_cfg4,_sek8,_puk8,_cfg8,_sek16,_puk16,_cfg16,_sek32,_puk32,_cfg32):
+    let (_sek4,_puk4,_cfg4,_sek8,_puk8,_cfg8,_sek16,_puk16,_cfg16,_sek32,_puk32,_cfg32,
+         _crtsek4,_crtpuk4,_crtsek8,_crtpuk8,_crtsek16,_crtpuk16,_crtsek32,_crtpuk32):
                 (ClientKey,ServerKey,DynIntegerEncryptor,
                  ClientKey,ServerKey,DynIntegerEncryptor,
                  ClientKey,ServerKey,DynIntegerEncryptor,
-                 ClientKey,ServerKey,DynIntegerEncryptor);
+                 ClientKey,ServerKey,DynIntegerEncryptor,
+                 CRTVecClientKey, CRTVecServerKey,
+                 CRTVecClientKey, CRTVecServerKey,
+                 CRTVecClientKey, CRTVecServerKey,
+                 CRTVecClientKey, CRTVecServerKey);
     #[cfg(feature = "concrete")]
     {
-    let concrete_key_path = Path::new("./keys/concrete-keys-encryptors__4-8-16-32.key");
+    let concrete_key_path = Path::new("./keys/concrete-plain-crt-keys-encryptors__4-8-16-32.key");
     // setup keys
     simple_duration!(
         ["Setup Concrete keys"],
         [
-            (_sek4,_puk4,_cfg4,_sek8,_puk8,_cfg8,_sek16,_puk16,_cfg16,_sek32,_puk32,_cfg32) = if !concrete_key_path.is_file() {
+            (_sek4,_puk4,_cfg4,_sek8,_puk8,_cfg8,_sek16,_puk16,_cfg16,_sek32,_puk32,_cfg32,
+             _crtsek4,_crtpuk4,_crtsek8,_crtpuk8,_crtsek16,_crtpuk16,_crtsek32,_crtpuk32) = if !concrete_key_path.is_file() {
                 let mut u4_builder = ConfigBuilder::all_disabled();
                 let cfg4 = u4_builder.add_integer_type(DynIntegerParameters {block_parameters: FheUint2Parameters::default().into(), num_block: 2});
                 let mut u8_builder = ConfigBuilder::all_disabled();
@@ -119,10 +159,16 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 let (sek16,puk16) = generate_keys(u16_builder.build());
                 let (sek32,puk32) = generate_keys(u32_builder.build());
 
-                let keys_file = File::create(concrete_key_path).map(BufWriter::new)?;
-                bincode::serialize_into(keys_file, &(&sek4,&puk4,&cfg4,&sek8,&puk8,&cfg8,&sek16,&puk16,&cfg16,&sek32,&puk32,&cfg32))?;
+                // CRT keys
+                let (crtsek4,crtpuk4)   = gen_several_keys(&CRT4_PARAM_IDS .iter().map(|i| CRT_PARAMS_ALL[*i]).collect::<Vec<_>>());
+                let (crtsek8,crtpuk8)   = gen_several_keys(&CRT8_PARAM_IDS .iter().map(|i| CRT_PARAMS_ALL[*i]).collect::<Vec<_>>());
+                let (crtsek16,crtpuk16) = gen_several_keys(&CRT16_PARAM_IDS.iter().map(|i| CRT_PARAMS_ALL[*i]).collect::<Vec<_>>());
+                let (crtsek32,crtpuk32) = gen_several_keys(&CRT32_PARAM_IDS.iter().map(|i| CRT_PARAMS_ALL[*i]).collect::<Vec<_>>());
 
-                (sek4,puk4,cfg4,sek8,puk8,cfg8,sek16,puk16,cfg16,sek32,puk32,cfg32)
+                let keys_file = File::create(concrete_key_path).map(BufWriter::new)?;
+                bincode::serialize_into(keys_file, &(&sek4,&puk4,&cfg4,&sek8,&puk8,&cfg8,&sek16,&puk16,&cfg16,&sek32,&puk32,&cfg32,&crtsek4,&crtpuk4,&crtsek8,&crtpuk8,&crtsek16,&crtpuk16,&crtsek32,&crtpuk32))?;
+
+                (sek4,puk4,cfg4,sek8,puk8,cfg8,sek16,puk16,cfg16,sek32,puk32,cfg32,crtsek4,crtpuk4,crtsek8,crtpuk8,crtsek16,crtpuk16,crtsek32,crtpuk32)
             } else {
                 let keys_file = File::open(concrete_key_path).map(BufReader::new)?;
                 bincode::deserialize_from(keys_file)?
@@ -132,13 +178,17 @@ fn bench() -> Result<(), Box<dyn Error>> {
     }
     // choose the right one ..
     #[cfg(all(feature = "concrete", feature = "4bit"))]
-    let (client_key, server_key, encryptor) = (_sek4, _puk4, _cfg4);
+    let (client_key, server_key, encryptor, crt_clikey, crt_serkey, crt_basis, crt_key_ids) =
+        (_sek4, _puk4, _cfg4, _crtsek4, _crtpuk4, CRT4_BASIS, gen_key_id(&CRT4_PARAM_IDS));
     #[cfg(all(feature = "concrete", feature = "8bit"))]
-    let (client_key, server_key, encryptor) = (_sek8, _puk8, _cfg8);
+    let (client_key, server_key, encryptor, crt_clikey, crt_serkey, crt_basis, crt_key_ids) =
+        (_sek8, _puk8, _cfg8, _crtsek8, _crtpuk8, CRT8_BASIS, gen_key_id(&CRT8_PARAM_IDS));
     #[cfg(all(feature = "concrete", feature = "16bit"))]
-    let (client_key, server_key, encryptor) = (_sek16, _puk16, _cfg16);
+    let (client_key, server_key, encryptor, crt_clikey, crt_serkey, crt_basis, crt_key_ids) =
+        (_sek16, _puk16, _cfg16, _crtsek16, _crtpuk16, CRT16_BASIS, gen_key_id(&CRT16_PARAM_IDS));
     #[cfg(all(feature = "concrete", feature = "32bit"))]
-    let (client_key, server_key, encryptor) = (_sek32, _puk32, _cfg32);
+    let (client_key, server_key, encryptor, crt_clikey, crt_serkey, crt_basis, crt_key_ids) =
+        (_sek32, _puk32, _cfg32, _crtsek32, _crtpuk32, CRT32_BASIS, gen_key_id(&CRT32_PARAM_IDS));
     // .. and set as server key
     #[cfg(feature = "concrete")]
     set_server_key(server_key);
@@ -219,13 +269,18 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     // Concrete encrypt values
     #[cfg(feature = "concrete")]
-    let (_c_ca, _c_cb, _c_cc, _c_cd);
+    let (_c_ca, _c_cb, _c_cc, _c_cd,
+         _c_crt_ca, _c_crt_cb, _c_crt_cc, _c_crt_cd);
     #[cfg(feature = "concrete")]
     {
     _c_ca = encryptor.encrypt(a_val as u64, &client_key);
     _c_cb = encryptor.encrypt(b_val as u64, &client_key);
     _c_cc = encryptor.encrypt(c_val as u64, &client_key);
     _c_cd = encryptor.encrypt(d_val as u64, &client_key);
+    _c_crt_ca = crt_clikey.encrypt_crt_several_keys(&(a_val as u64), &crt_basis, &crt_key_ids);
+    _c_crt_cb = crt_clikey.encrypt_crt_several_keys(&(b_val as u64), &crt_basis, &crt_key_ids);
+    _c_crt_cc = crt_clikey.encrypt_crt_several_keys(&(c_val as u64), &crt_basis, &crt_key_ids);
+    _c_crt_cd = crt_clikey.encrypt_crt_several_keys(&(d_val as u64), &crt_basis, &crt_key_ids);
     }
 
 
@@ -259,6 +314,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let (p_add_a_b, p_sub_c_d, p_add_ab_cnd);
     #[cfg(all(feature = "add", feature = "concrete"))]
     let (_c_add_a_b, _c_sub_c_d, _c_add_ab_cnd);
+    #[cfg(all(feature = "add", feature = "concrete"))]
+    let (mut _c_crt_add_a_b, mut _c_crt_cb_clone) = (_c_crt_ca.clone(), _c_crt_cb.clone());
     #[cfg(feature = "add")]
     {
     // Parmesan first level addition/subtraction:   a + b   ,   c - d
@@ -306,6 +363,14 @@ fn bench() -> Result<(), Box<dyn Error>> {
             _c_add_ab_cnd = _c_add_a_b.clone() + _c_sub_c_d.clone();
         ]
     );
+
+    // CRT
+    simple_duration!(
+        ["Concrete::CRT::Add (1st lvl, {}-bit)", BITLEN],
+        [
+            crt_serkey.unchecked_add_crt_many_keys_assign_parallelized(&mut _c_crt_add_a_b, &mut _c_crt_cb_clone);
+        ]
+    );
     }
     }
 
@@ -340,6 +405,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 _c_scm_a.push(c_scmi);
             ]
         );
+        //TODO consider Concrete with CRT, can it encrypt trivially?
     }
     }
     }
@@ -454,6 +520,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
                     _c_mul_a_b = _c_ca.clone() * _c_cb.clone();
                 ]
             );
+
+            //TODO
+            //~ // CRT
+            //~ simple_duration!(
+                //~ ["Concrete::CRT::Mul ({}-bit)", BITLEN],
+                //~ [
+                    //~ crt_serkey.unchecked_mul_crt_many_keys_assign(&mut _c_crt_mul_a_b, &mut _c_crt_cb_clone);
+                //~ ]
+            //~ );
         }
     }
 
