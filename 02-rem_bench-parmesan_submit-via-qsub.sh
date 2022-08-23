@@ -4,9 +4,9 @@
 # #PBS -l select=1:ncpus=64:hyperthreading=True:mem=1gb:scratch_local=1gb:cluster=halmir -l place=exclhost
 #
 # no hyperthreading:
-#PBS -l select=1:ncpus=64:mem=1gb:scratch_local=1gb:cluster=halmir -l place=exclhost
+#PBS -l select=1:ncpus=64:mem=16gb:scratch_local=1gb:cluster=halmir -l place=exclhost
 #
-#PBS -l walltime=00:30:00
+#PBS -l walltime=00:40:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
