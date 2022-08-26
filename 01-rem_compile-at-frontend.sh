@@ -21,6 +21,7 @@
 cd bench-parmesan
 git checkout master
 git pull
+cargo update -p parmesan
 cd ..
 
 cd dstat-with-short-intervals
