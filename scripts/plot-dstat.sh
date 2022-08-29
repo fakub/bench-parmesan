@@ -181,7 +181,7 @@ plot \
 set tmargin at screen 0.14
 set bmargin at screen 0.32
 
-set xlabel 'Time [s]'
+set xlabel 'Time [100 ms]'
 
 plot \
     @cpu_stats u 1:(($2+$3+$4+$5+$6+$7+$8+$9+$10+$11+$12+$13+$14+$15+$16+$17+$18+$19+$20+$21+$22+$23+$24+$25+$26+$27+$28+$29+$30+$31+$32+$33) / 100) w boxes notitle, \

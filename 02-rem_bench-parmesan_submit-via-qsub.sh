@@ -3,10 +3,10 @@
 # with hyperthreading (only possible with place=exclhost; ncpus means CPU cores, this makes 128 threads, however, it might be slower):
 #PBS -l select=1:ncpus=64:hyperthreading=True:mem=16gb:scratch_local=1gb:cluster=halmir -l place=exclhost
 #
-# no hyperthreading (not possible to turn HT OFF, workaround to select 64 threads without exclhost):
+# no hyperthreading (not possible to turn HT OFF, workaround to select 64 threads without exclhost /runs as fast as with HT, slower for long mul/):
 # #PBS -l select=1:ncpus=64:mem=16gb:scratch_local=1gb:cluster=halmir
 #
-#PBS -l walltime=00:40:00
+#PBS -l walltime=00:30:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
