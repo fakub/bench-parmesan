@@ -39,5 +39,6 @@ all_light   = ["pbs", "add", "sgn", "round", "max", "mul_light", "squ_light", "s
 # Measurements
 measure     = []    # measure is needed for measure_duration! which is used instead of simple_duration! in cases where there is no measure_duration! inside the block
 log_ops     = ["measure", "parmesan/log_ops"]
+seq_analyze = ["parmesan/seq_analyze"]
 # Concrete
 concrete    = []

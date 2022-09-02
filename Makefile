@@ -6,6 +6,19 @@ all_32bit:
 	cargo update -p parmesan
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "32bit all"
 
+analyze_4bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "4bit all_light seq_analyze"
+analyze_8bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit all_light seq_analyze"
+analyze_16bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "16bit all seq_analyze"
+analyze_32bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "32bit all seq_analyze"
+
 # bench only selected feature
 pbs:
 	cargo update -p parmesan
