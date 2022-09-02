@@ -13,6 +13,9 @@ pbs:
 add:
 	cargo update -p parmesan
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit add"
+scm:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit scm"
 sgn:
 	cargo update -p parmesan
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit sgn"
@@ -22,18 +25,35 @@ round:
 max:
 	cargo update -p parmesan
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit max"
-mul_light:
-	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit mul_light"
-squ_light:
-	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit squ_light"
-scm:
-	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit scm"
 nn:
 	cargo update -p parmesan
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit nn"
+
+mul_light_4bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "4bit mul_light"
+mul_light_8bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit mul_light"
+mul_16bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "16bit mul"
+mul_32bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "32bit mul"
+squ_light_4bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "4bit squ_light"
+squ_light_8bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit squ_light"
+squ_16bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "16bit squ"
+squ_32bit:
+	cargo update -p parmesan
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "32bit squ"
+
 concrete_4bit:
 	cargo update -p parmesan
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "4bit concrete all_light"
