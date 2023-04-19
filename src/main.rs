@@ -72,7 +72,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // -------------------------------------------------------------------------
     //  Parmesan parameters & key setup
 
-    let par = &params::PAR_CNCR_V0_2__M2_C3;
+    let par = &params::PAR_TFHE_V0_2__M4_C0;
     simple_duration!(
         ["Setup Parmesan keys"],
         [
@@ -243,7 +243,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
             ["Pbs {}x", PBS_N],
             [
                 for _ in 0..PBS_N {
-                    _p_c_pbs_id_a = ParmCiphertext::single(pbs::id__pi_5(&pc, &_p_ca[0])?);
+                    _p_c_pbs_id_a = ParmCiphertext::single(pbs::id__pi_5(&pc, &_p_ca[0]));
                 }
             ]
         );
