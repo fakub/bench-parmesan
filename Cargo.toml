@@ -9,7 +9,7 @@ edition = "2021"
 parmesan = "^0.1.0-alpha"
 # parmesan = { git = "https://github.com/fakub/parmesan" }
 # parmesan = { path = "../parmesan" }
-concrete = { version = "^0.2.0-beta.2", features = ["integers", "serde"] }
+tfhe = { version = "^0.2", features = ["integer", "x86_64-unix"] }
 bincode = "^1.3.3"
 colored = "^2.0.0"
 rayon = "^1.5.1"
@@ -41,5 +41,5 @@ all_light   = ["pbs", "add", "sgn", "round", "max", "mul_light", "squ_light", "s
 measure     = []    # measure is needed for measure_duration! which is used instead of simple_duration! in cases where there is no measure_duration! inside the block
 log_ops     = ["measure", "parmesan/log_ops"]
 seq_analyze = ["parmesan/seq_analyze"]
-# Concrete
-concrete    = []
+# TFHE-rs
+tfhe_rs     = []

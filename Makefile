@@ -67,23 +67,23 @@ squ_32bit:
 	cargo update -p parmesan
 	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "32bit squ"
 
-concrete_4bit:
+tfhe_rs_4bit:
 	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "4bit concrete all_light"
-concrete_8bit:
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "4bit tfhe_rs all_light"
+tfhe_rs_8bit:
 	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit concrete all_light"
-concrete_16bit:
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "8bit tfhe_rs all_light"
+tfhe_rs_16bit:
 	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "16bit concrete all"
-concrete_32bit:
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "16bit tfhe_rs all"
+tfhe_rs_32bit:
 	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "32bit concrete all"
+	RUSTFLAGS="-C target-cpu=native" cargo run --release --features "32bit tfhe_rs all"
 
 # build-only
 build:
 	cargo update -p parmesan
-	RUSTFLAGS="-C target-cpu=native" cargo build --release --features "32bit concrete all"
+	RUSTFLAGS="-C target-cpu=native" cargo build --release --features "32bit tfhe_rs all"
 
 # run tests
 test:
