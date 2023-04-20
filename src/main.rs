@@ -389,6 +389,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "max")]
     let (p_max_a_b, p_max_c_d, p_max_mab_mcd);
+    #[cfg(all(feature = "tfhe_rs", feature = "max"))]
+    let (_c_max_a_b, _c_max_c_d, _c_max_mab_mcd);
     #[cfg(feature = "max")]
     {
     // Parmesan first level maximum
@@ -413,7 +415,31 @@ fn bench() -> Result<(), Box<dyn Error>> {
         ]
     );
 
-    //TODO TFHE-rs maximum? server_key.smart_max_parallelized(&mut a, &mut b);
+    #[cfg(feature = "tfhe_rs")]
+    {
+    // TFHE-rs first level maximum
+    simple_duration!(
+        ["TFHE-rs::Max (1st lvl, {}-bit)", BITLEN],
+        [
+            _c_max_a_b = server_key.smart_max_parallelized(&mut _c_ca.clone(), &mut _c_cb.clone());
+        ]
+    );
+    simple_duration!(
+        ["TFHE-rs::Max (1st lvl, {}-bit)", BITLEN],
+        [
+            _c_max_c_d = server_key.smart_max_parallelized(&mut _c_cc.clone(), &mut _c_cd.clone());
+        ]
+    );
+
+    // TFHE-rs second level maximum
+    simple_duration!(
+        ["TFHE-rs::Max (2nd lvl, {}-bit)", BITLEN],
+        [
+            _c_max_mab_mcd = server_key.smart_max_parallelized(&mut _c_max_a_b.clone(), &mut _c_max_c_d.clone());
+        ]
+    );
+
+    }
     }
 
 
