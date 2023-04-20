@@ -32,8 +32,7 @@ cd ..
 #
 #   Add FFTW module
 #
-module add fftw/fftw-3.3.8-intel-19.0.4-532p634
-#~ module add fftw/fftw-3.3.8-intel-20.0.0-au2vxr2
+#   --- not needed anymore: module add fftw/fftw-3.3.8-intel-20.0.0-au2vxr2
 
 #
 #   Compile
@@ -69,19 +68,19 @@ export RUSTFLAGS="-C target-cpu=znver2"
 # for some reason (some dependency requires that), it compiles better with nightly
 rustup override set nightly
 
-cargo build --release --no-default-features --features "4bit concrete all_light"
+cargo build --release --no-default-features --features "4bit tfhe_rs all_light"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C4_BEN_znver2-AMD
-cargo build --release --no-default-features --features "4bit concrete all_light log_ops"
+cargo build --release --no-default-features --features "4bit tfhe_rs all_light log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C4_LOG_znver2-AMD
-cargo build --release --no-default-features --features "8bit concrete all_light"
+cargo build --release --no-default-features --features "8bit tfhe_rs all_light"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C8_BEN_znver2-AMD
-cargo build --release --no-default-features --features "8bit concrete all_light log_ops"
+cargo build --release --no-default-features --features "8bit tfhe_rs all_light log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C8_LOG_znver2-AMD
-cargo build --release --no-default-features --features "16bit concrete all"
+cargo build --release --no-default-features --features "16bit tfhe_rs all"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C16_BEN_znver2-AMD
-cargo build --release --no-default-features --features "16bit concrete all log_ops"
+cargo build --release --no-default-features --features "16bit tfhe_rs all log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C16_LOG_znver2-AMD
-cargo build --release --no-default-features --features "32bit concrete all"
+cargo build --release --no-default-features --features "32bit tfhe_rs all"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C32_BEN_znver2-AMD
-cargo build --release --no-default-features --features "32bit concrete all log_ops"
+cargo build --release --no-default-features --features "32bit tfhe_rs all log_ops"
 mv target/release/bench-parmesan ../bin/bench-parmesan_C32_LOG_znver2-AMD

@@ -6,7 +6,7 @@
 # no hyperthreading (not possible to turn HT OFF, workaround to select 64 threads without exclhost /runs as fast as with HT, slower for long mul/):
 # #PBS -l select=1:ncpus=64:mem=16gb:scratch_local=1gb:cluster=halmir
 #
-#PBS -l walltime=00:30:00
+#PBS -l walltime=00:10:00
 #
 #   Name        CPU's                           Queue                           Threads                     Rust CPU family         Clock
 #
@@ -81,8 +81,8 @@ CPU_STATS_C32_LOG="raw-cpu-stats-${MEASURE_METHOD}_C32.log"
 
 
 # initialize required modules (if any)
-module add fftw/fftw-3.3.8-intel-19.0.4-532p634
-# module add fftw/fftw-3.3.8-intel-20.0.0-au2vxr2   # does not compile with this one
+# --- not needed anymore: module add fftw/fftw-3.3.8-intel-19.0.4-532p634
+# --- module add fftw/fftw-3.3.8-intel-20.0.0-au2vxr2   # does not compile with this one
 
 # clean the SCRATCH when job finishes (and data are successfully copied out) or is killed
 trap 'clean_scratch' TERM EXIT
@@ -97,8 +97,8 @@ DATA_DIR="/storage/brno2/home/fakub/parallel-arithmetics-benchmark"
 rm -rf keys
 mkdir -p keys
 cp \
-    $DATA_DIR/keys/parcrete-keys__n-776_N-2048_gamma-23_l-1_kappa-4_t-5_v0.2.key \
-    $DATA_DIR/keys/concrete-keys-encryptors__4-8-16-32.key \
+    $DATA_DIR/keys/parm__tfhe_rs_v0_2-keys__n-742_N-2048_gamma-23_l-1_kappa-3_t-5.key \
+    $DATA_DIR/keys/tfhe-rs-keys__4-8-16-32.key \
     keys/ || { echo >&2 "Error while copying input file(s)!"; exit 2; }
 
 # copy binaries & scripts
