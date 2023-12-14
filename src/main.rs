@@ -704,11 +704,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(all(feature = "tfhe_rs", any(feature = "mul", all(feature = "mul_light", any(feature = "4bit", feature = "8bit")))))]
     {
     let c_mul_a_b_v: u64 = _c_mul_a_b.decrypt(&client_key);
-    let c_mul_a_b_exp: u64;
-    #[cfg(not(feature = "32bit"))]
-    c_mul_a_b_exp = ((a_val as u64 & ((1 << BITLEN) - 1)) * (b_val as u64 & ((1 << BITLEN) - 1))) % (1 << (2*BITLEN));
-    #[cfg(feature = "32bit")]
-    c_mul_a_b_exp = (a_val as u64 & ((1 << BITLEN) - 1)) * (b_val as u64 & ((1 << BITLEN) - 1));
+    let mut c_mul_a_b_exp: u64 = (a_val as u64 & ((1 << BITLEN) - 1)) * (b_val as u64 & ((1 << BITLEN) - 1));
+    c_mul_a_b_exp = if BITLEN < 32 {c_mul_a_b_exp % (1 << (2*BITLEN))} else {c_mul_a_b_exp};
     summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
                             c_mul_a_b_v,
                             if c_mul_a_b_v == c_mul_a_b_exp {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -729,10 +726,12 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(all(feature = "tfhe_rs", any(feature = "squ", all(feature = "squ_light", any(feature = "4bit", feature = "8bit")))))]
     {
     let c_squ_a_v: u64 = _c_squ_a.decrypt(&client_key);
+    let mut c_squ_a_exp: u64 = (a_val as u64 * a_val as u64) % (1 << BITLEN);
+    c_squ_a_exp = if BITLEN < 32 {c_squ_a_exp % (1 << (2*BITLEN))} else {c_squ_a_exp};
     summary_text = format!("{}\na ^ 2 (Conc)  = {:22} :: {} (exp. {})", summary_text,
                             c_squ_a_v,
-                            if c_squ_a_v == (a_val as u64 * a_val as u64) % (1 << BITLEN) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (a_val * a_val) % (1 << (2*BITLEN))
+                            if c_squ_a_v == c_squ_a_exp {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            c_squ_a_exp
     );
     }
     }
