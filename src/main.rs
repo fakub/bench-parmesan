@@ -29,7 +29,7 @@ use parmesan::arithmetics::ParmArithmetics;
 #[cfg(feature = "tfhe_rs")]
 use tfhe::prelude::*;
 #[allow(unused_imports)]
-use tfhe::{generate_keys, set_server_key, ConfigBuilder, FheUint32, FheUint16, FheUint8};   // FheUint4 not existing
+use tfhe::{generate_keys, set_server_key, ConfigBuilder, FheUint8, FheUint16, FheUint32, FheUint64};   // FheUint4 not existing
 
 // timing measurements
 extern crate chrono;
@@ -196,6 +196,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
     let (_c_ca, _c_cb, _c_cc, _c_cd);
 
     // FheUint4 does not exist
+    #[cfg(all(feature = "tfhe_rs", feature = "4bit"))]
+    compile_error!("FheUint4 not implemented.");
     //~ #[cfg(all(feature = "tfhe_rs", feature = "4bit"))]
     //~ {
     //~ _c_ca = FheUint4::try_encrypt(a_val as u32, &client_key)?;
@@ -487,8 +489,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 ["TFHE-rs::Mul ({}-bit)", BITLEN],
                 [
                     // _c_mul_a_b = _c_ca.clone() * _c_cb.clone();
-                    //TODO cast & mul? might be extremely slow if it does not treat triv zeros properly
-                    _c_mul_a_b = &_c_ca * &_c_cb;
+                    #[cfg(feature = "8bit")]
+                    let (_c_ca_dbl, _c_cb_dbl): (FheUint16, FheUint16);
+                    #[cfg(feature = "16bit")]
+                    let (_c_ca_dbl, _c_cb_dbl): (FheUint32, FheUint32);
+                    #[cfg(feature = "32bit")]
+                    let (_c_ca_dbl, _c_cb_dbl): (FheUint64, FheUint64);
+                    _c_ca_dbl = _c_ca.clone().cast_into();
+                    _c_cb_dbl = _c_cb.clone().cast_into();
+                    _c_mul_a_b = &_c_ca_dbl * &_c_cb_dbl;
                 ]
             );
         }
@@ -695,10 +704,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
     #[cfg(all(feature = "tfhe_rs", any(feature = "mul", all(feature = "mul_light", any(feature = "4bit", feature = "8bit")))))]
     {
     let c_mul_a_b_v: u64 = _c_mul_a_b.decrypt(&client_key);
+    let c_mul_a_b_exp: u64;
+    #[cfg(not(feature = "32bit"))]
+    c_mul_a_b_exp = ((a_val as u64 & ((1 << BITLEN) - 1)) * (b_val as u64 & ((1 << BITLEN) - 1))) % (1 << (2*BITLEN));
+    #[cfg(feature = "32bit")]
+    c_mul_a_b_exp = (a_val as u64 & ((1 << BITLEN) - 1)) * (b_val as u64 & ((1 << BITLEN) - 1));
     summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
                             c_mul_a_b_v,
-                            if c_mul_a_b_v == (a_val as u64 * b_val as u64) % (1 << BITLEN) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (a_val * b_val) % (1 << BITLEN)
+                            if c_mul_a_b_v == c_mul_a_b_exp {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
+                            c_mul_a_b_exp
     );
     }
     }
@@ -718,7 +732,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     summary_text = format!("{}\na ^ 2 (Conc)  = {:22} :: {} (exp. {})", summary_text,
                             c_squ_a_v,
                             if c_squ_a_v == (a_val as u64 * a_val as u64) % (1 << BITLEN) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
-                            (a_val * a_val) % (1 << BITLEN)
+                            (a_val * a_val) % (1 << (2*BITLEN))
     );
     }
     }
