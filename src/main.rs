@@ -48,7 +48,7 @@ fn main() {
     // run benchmark
     println!();
     simple_duration!(
-        ["Benchmark: Parmesan vs. TFHE-rs v0.2 ({}-bit inputs)", BITLEN],
+        ["Benchmark: Parmesan vs. TFHE-rs v0.5 ({}-bit inputs)", BITLEN],
         [
             let _x = bench();
         ]
@@ -317,7 +317,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(feature = "scm")]
     let mut p_scm_a: Vec<ParmCiphertext> = Vec::new();
-    #[cfg(all(feature = "add", feature = "tfhe_rs"))]
+    #[cfg(all(feature = "scm", feature = "tfhe_rs"))]
     let mut _c_scm_a = Vec::new();
     #[cfg(feature = "scm")]
     {
@@ -694,6 +694,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
 
     #[cfg(any(feature = "mul", all(feature = "mul_light", any(feature = "4bit", feature = "8bit"))))]
     {
+    //TODO this does not decrypt for 32-bit mul/squ
     let mul_a_b     = pu.decrypt(&p_mul_a_b    )?;
     summary_text = format!("{}\n\nMultiplication:", summary_text);
     summary_text = format!("{}\na × b         = {:22} :: {} (exp. {})", summary_text,
