@@ -25,11 +25,11 @@ use parmesan::ParmesanCloudovo;
 #[allow(unused_imports)]
 use parmesan::arithmetics::ParmArithmetics;
 
-// TFHE-rs v0.2.x
+// TFHE-rs v0.5.x
 #[cfg(feature = "tfhe_rs")]
-use tfhe::shortint::parameters::PARAM_MESSAGE_2_CARRY_2;
-#[cfg(feature = "tfhe_rs")]
-use tfhe::integer::*;
+use tfhe::prelude::*;
+#[allow(unused_imports)]
+use tfhe::{generate_keys, set_server_key, ConfigBuilder, FheUint32, FheUint16, FheUint8};   // FheUint4 not existing
 
 // timing measurements
 extern crate chrono;
@@ -72,7 +72,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // -------------------------------------------------------------------------
     //  Parmesan parameters & key setup
 
-    let par = &params::PAR_TFHE_V0_2__M4_C0;
+    let par = &params::PAR_TFHE_V0_5__M4_C0;
     simple_duration!(
         ["Setup Parmesan keys"],
         [
@@ -92,44 +92,30 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // TFHE-rs parameters & key setup
 
     #[cfg(feature = "tfhe_rs")]
-    let (_sek4,_puk4,_sek8,_puk8,_sek16,_puk16,_sek32,_puk32):
-                (RadixClientKey,ServerKey,
-                 RadixClientKey,ServerKey,
-                 RadixClientKey,ServerKey,
-                 RadixClientKey,ServerKey);
+    let (client_key, server_key): (tfhe::ClientKey, tfhe::ServerKey);
     #[cfg(feature = "tfhe_rs")]
     {
-    let tfhe_rs_key_path = Path::new("./keys/tfhe-rs-keys__4-8-16-32.key");
+    let tfhe_rs_key_path = Path::new("./keys/tfhe-rs-v0.5-sec-pub.key");
     // setup keys
     simple_duration!(
         ["Setup TFHE-rs keys"],
         [
-            (_sek4,_puk4,_sek8,_puk8,_sek16,_puk16,_sek32,_puk32) = if !tfhe_rs_key_path.is_file() {
-                let (sek4,puk4) =   gen_keys_radix(&PARAM_MESSAGE_2_CARRY_2,  4 / 2);
-                let (sek8,puk8) =   gen_keys_radix(&PARAM_MESSAGE_2_CARRY_2,  8 / 2);
-                let (sek16,puk16) = gen_keys_radix(&PARAM_MESSAGE_2_CARRY_2, 16 / 2);
-                let (sek32,puk32) = gen_keys_radix(&PARAM_MESSAGE_2_CARRY_2, 32 / 2);
+            (client_key, server_key) = if !tfhe_rs_key_path.is_file() {
+                let config = ConfigBuilder::default().build();
+                let (sek,puk) = generate_keys(config);
 
                 let keys_file = File::create(tfhe_rs_key_path).map(BufWriter::new)?;
-                bincode::serialize_into(keys_file, &(&sek4,&puk4,&sek8,&puk8,&sek16,&puk16,&sek32,&puk32))?;
+                bincode::serialize_into(keys_file, &(&sek,&puk))?;
 
-                (sek4,puk4,sek8,puk8,sek16,puk16,sek32,puk32)
+                (sek,puk)
             } else {
                 let keys_file = File::open(tfhe_rs_key_path).map(BufReader::new)?;
                 bincode::deserialize_from(keys_file)?
             };
+            set_server_key(server_key);
         ]
     );
     }
-    // choose the right one ..
-    #[cfg(all(feature = "tfhe_rs", feature = "4bit"))]
-    let (client_key, server_key) = (_sek4, _puk4);
-    #[cfg(all(feature = "tfhe_rs", feature = "8bit"))]
-    let (client_key, server_key) = (_sek8, _puk8);
-    #[cfg(all(feature = "tfhe_rs", feature = "16bit"))]
-    let (client_key, server_key) = (_sek16, _puk16);
-    #[cfg(all(feature = "tfhe_rs", feature = "32bit"))]
-    let (client_key, server_key) = (_sek32, _puk32);
 
 
     // =========================================================================
@@ -208,12 +194,35 @@ fn bench() -> Result<(), Box<dyn Error>> {
     // TFHE-rs encrypt values
     #[cfg(feature = "tfhe_rs")]
     let (_c_ca, _c_cb, _c_cc, _c_cd);
-    #[cfg(feature = "tfhe_rs")]
+
+    // FheUint4 does not exist
+    //~ #[cfg(all(feature = "tfhe_rs", feature = "4bit"))]
+    //~ {
+    //~ _c_ca = FheUint4::try_encrypt(a_val as u32, &client_key)?;
+    //~ _c_cb = FheUint4::try_encrypt(b_val as u32, &client_key)?;
+    //~ _c_cc = FheUint4::try_encrypt(c_val as u32, &client_key)?;
+    //~ _c_cd = FheUint4::try_encrypt(d_val as u32, &client_key)?;
+    //~ }
+    #[cfg(all(feature = "tfhe_rs", feature = "8bit"))]
     {
-    _c_ca = client_key.encrypt(a_val as u64);
-    _c_cb = client_key.encrypt(b_val as u64);
-    _c_cc = client_key.encrypt(c_val as u64);
-    _c_cd = client_key.encrypt(d_val as u64);
+    _c_ca = FheUint8::try_encrypt(a_val as u32, &client_key)?;
+    _c_cb = FheUint8::try_encrypt(b_val as u32, &client_key)?;
+    _c_cc = FheUint8::try_encrypt(c_val as u32, &client_key)?;
+    _c_cd = FheUint8::try_encrypt(d_val as u32, &client_key)?;
+    }
+    #[cfg(all(feature = "tfhe_rs", feature = "16bit"))]
+    {
+    _c_ca = FheUint16::try_encrypt(a_val as u32, &client_key)?;
+    _c_cb = FheUint16::try_encrypt(b_val as u32, &client_key)?;
+    _c_cc = FheUint16::try_encrypt(c_val as u32, &client_key)?;
+    _c_cd = FheUint16::try_encrypt(d_val as u32, &client_key)?;
+    }
+    #[cfg(all(feature = "tfhe_rs", feature = "32bit"))]
+    {
+    _c_ca = FheUint32::try_encrypt(a_val as u32, &client_key)?;
+    _c_cb = FheUint32::try_encrypt(b_val as u32, &client_key)?;
+    _c_cc = FheUint32::try_encrypt(c_val as u32, &client_key)?;
+    _c_cd = FheUint32::try_encrypt(d_val as u32, &client_key)?;
     }
 
 
@@ -277,15 +286,16 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["TFHE-rs::Add (1st lvl, {}-bit)", BITLEN],
         [
-            // concrete was: _c_add_a_b = _c_ca.clone() + _c_cb.clone();
-            _c_add_a_b = server_key.smart_add_parallelized(&mut _c_ca.clone(), &mut _c_cb.clone());
+            // concrete was:     _c_add_a_b = _c_ca.clone() + _c_cb.clone();
+            // tfhe-rs v0.2 was: _c_add_a_b = server_key.smart_add_parallelized(&mut _c_ca.clone(), &mut _c_cb.clone());
+            _c_add_a_b = &_c_ca + &_c_cb;
         ]
     );
     simple_duration!(
         ["TFHE-rs::Sub (1st lvl, {}-bit)", BITLEN],
         [
             // _c_sub_c_d = _c_cc.clone() - _c_cd.clone();
-            _c_sub_c_d = server_key.smart_sub_parallelized(&mut _c_cc.clone(), &mut _c_cd.clone());
+            _c_sub_c_d = &_c_cc - &_c_cd;
         ]
     );
 
@@ -293,7 +303,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["TFHE-rs::Add (2nd lvl, {}-bit)", BITLEN],
         [
-            _c_add_ab_cnd = server_key.smart_add_parallelized(&mut _c_add_a_b.clone(), &mut _c_sub_c_d.clone());
+            _c_add_ab_cnd = &_c_add_a_b + &_c_sub_c_d;
         ]
     );
     }
@@ -327,7 +337,15 @@ fn bench() -> Result<(), Box<dyn Error>> {
             ["TFHE-rs::Sc. Mul (by {}, {}-bit)", ki, BITLEN],
             [
                 // let c_scmi = ki as u64 * _c_ca.clone();
-                let c_scmi = server_key.smart_scalar_mul_parallelized(&mut _c_ca.clone(), ki as u64);
+                //TODO this is also a piece of shit .. need to deal with the trim
+                //~ #[cfg(feature = "4bit")]
+                //~ let c_scmi = &_c_ca * (ki as u4);
+                #[cfg(feature = "8bit")]
+                let c_scmi = &_c_ca * (ki as u8);
+                #[cfg(feature = "16bit")]
+                let c_scmi = &_c_ca * (ki as u16);
+                #[cfg(feature = "32bit")]
+                let c_scmi = &_c_ca * (ki as u32);
                 _c_scm_a.push(c_scmi);
             ]
         );
@@ -421,13 +439,13 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["TFHE-rs::Max (1st lvl, {}-bit)", BITLEN],
         [
-            _c_max_a_b = server_key.smart_max_parallelized(&mut _c_ca.clone(), &mut _c_cb.clone());
+            _c_max_a_b = _c_ca.max(&_c_cb);
         ]
     );
     simple_duration!(
         ["TFHE-rs::Max (1st lvl, {}-bit)", BITLEN],
         [
-            _c_max_c_d = server_key.smart_max_parallelized(&mut _c_cc.clone(), &mut _c_cd.clone());
+            _c_max_c_d = _c_cc.max(&_c_cd);
         ]
     );
 
@@ -435,7 +453,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     simple_duration!(
         ["TFHE-rs::Max (2nd lvl, {}-bit)", BITLEN],
         [
-            _c_max_mab_mcd = server_key.smart_max_parallelized(&mut _c_max_a_b.clone(), &mut _c_max_c_d.clone());
+            _c_max_mab_mcd = _c_max_a_b.max(&_c_max_c_d);
         ]
     );
 
@@ -469,7 +487,8 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 ["TFHE-rs::Mul ({}-bit)", BITLEN],
                 [
                     // _c_mul_a_b = _c_ca.clone() * _c_cb.clone();
-                    _c_mul_a_b = server_key.smart_mul_parallelized(&mut _c_ca.clone(), &mut _c_cb.clone());
+                    //TODO cast & mul? might be extremely slow if it does not treat triv zeros properly
+                    _c_mul_a_b = &_c_ca * &_c_cb;
                 ]
             );
         }
@@ -502,7 +521,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
                 ["TFHE-rs::Squ ({}-bit)", BITLEN],
                 [
                     //TODO check if there's a dedicated function
-                    _c_squ_a = server_key.smart_mul_parallelized(&mut _c_ca.clone(), &mut _c_ca.clone());
+                    _c_squ_a = &_c_ca * &_c_ca;
                 ]
             );
         }
@@ -565,7 +584,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     summary_text = format!("{}\n\nTFHE-rs Decryption:", summary_text);
     #[cfg(feature = "tfhe_rs")]
     {
-    let c_a_v: u64 = client_key.decrypt(&_c_ca);
+    let c_a_v: u64 = _c_ca.decrypt(&client_key);
     summary_text = format!("{}\ndecr(encr(a)) = {:12} :: {} (exp. {})", summary_text,
                             c_a_v,
                             if c_a_v == a_val as u64 & ((1 << BITLEN) - 1) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -675,7 +694,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     #[cfg(all(feature = "tfhe_rs", any(feature = "mul", all(feature = "mul_light", any(feature = "4bit", feature = "8bit")))))]
     {
-    let c_mul_a_b_v: u64 = client_key.decrypt(&_c_mul_a_b);
+    let c_mul_a_b_v: u64 = _c_mul_a_b.decrypt(&client_key);
     summary_text = format!("{}\na × b (Conc)  = {:22} :: {} (exp. {})", summary_text,
                             c_mul_a_b_v,
                             if c_mul_a_b_v == (a_val as u64 * b_val as u64) % (1 << BITLEN) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
@@ -695,7 +714,7 @@ fn bench() -> Result<(), Box<dyn Error>> {
     );
     #[cfg(all(feature = "tfhe_rs", any(feature = "squ", all(feature = "squ_light", any(feature = "4bit", feature = "8bit")))))]
     {
-    let c_squ_a_v: u64 = client_key.decrypt(&_c_squ_a);
+    let c_squ_a_v: u64 = _c_squ_a.decrypt(&client_key);
     summary_text = format!("{}\na ^ 2 (Conc)  = {:22} :: {} (exp. {})", summary_text,
                             c_squ_a_v,
                             if c_squ_a_v == (a_val as u64 * a_val as u64) % (1 << BITLEN) {String::from("PASS").bold().green()} else {String::from("FAIL").bold().red()},
